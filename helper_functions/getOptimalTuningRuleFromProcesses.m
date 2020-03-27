@@ -1,10 +1,4 @@
-function [procAssociatedWithOptTuningRule, list_of_max_deter]=getOptimalTuningRuleFromProcesses(list_of_processes,optimization_settings)
-for itr=1:length(list_of_processes)
-    if (list_of_processes(itr).optCost==0)
-        itr
-        list_of_processes(itr).findOptTuningRule(optimization_settings);
-    end
-end
+function [procAssociatedWithOptTuningRule, list_of_max_deter]=getOptimalTuningRuleFromProcesses(list_of_processes)
 
 list_of_worst_deter = zeros(length(list_of_processes), 0);
 

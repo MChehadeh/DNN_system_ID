@@ -21,6 +21,19 @@ classdef TuningRule < handle
            obj.pm=pm_para;
            [obj.c1,obj.c3]=calculate_tuning_parameters_beta_pm( beta_para,pm_para );
        end
+       
+       function copyobj(obj, reference_obj)
+         % Construct a new object based on a deep copy of the current
+         % object of this class by copying properties over.
+         props = properties(reference_obj);
+         for i = 1:length(props)
+            % Use Dynamic Expressions to copy the required property.
+            % For more info on usage of Dynamic Expressions, refer to
+            % the section "Creating Field Names Dynamically" in:
+            % web([docroot '/techdoc/matlab_prog/br04bw6-38.html#br1v5a9-1'])
+            obj.(props{i}) = reference_obj.(props{i});
+         end
+      end
    end
    methods (Static)
        function [ w,mag ] = get_w_mag_from_phase( g_model,phase )

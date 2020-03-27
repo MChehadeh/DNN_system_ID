@@ -5,7 +5,7 @@ addpath('helper_functions')
 %% Testing TOPTD_process, PIDcontroller and TuningRule
 opt_tuning_rule_ise=TuningRule;
 opt_tuning_rule_ise.rule_type=TuningRuleType.pm_based;
-opt_tuning_rule_ise.beta=-0.7308
+opt_tuning_rule_ise.beta=-0.9;
 opt_tuning_rule_ise.pm=20;
 opt_tuning_rule_ise.c1=0.4058;
 opt_tuning_rule_ise.c3=0.3585;
@@ -28,7 +28,7 @@ opt_tuning_rule_iae.beta_max=-0.1;
 quad_att=SOIPTD_process;
 quad_att.K=5;
 quad_att.tau=0.0121;
-quad_att.list_of_T=[0.02, 1.6889];
+quad_att.list_of_T=[0.02, 0.5];
 
 quad_att.findOptTuningRule(opt_tuning_rule_ise)
 quad_att.applyOptTuningRule(quad_att.optTuningRule)
@@ -44,8 +44,8 @@ quad_pos.applyOptTuningRule(quad_pos.optTuningRule)
 quad_pos.applyTuningRule(quad_pos.optTuningRule)
 
 %% Testing generateProcessObjects SOIPTD
-list_of_processes=generateProcessObjects('SOIPTD', 1, linspace(0.015,0.3,3),linspace(0.2, 2, 3),linspace(0.0005, 0.1, 3), []);
-[optProc, list_of_deter]=getOptimalTuningRuleFromProcesses(list_of_processes,opt_tuning_rule_ise);
+list_of_processes=generateProcessObjects('SOIPTD', 1, linspace(0.015,0.3,4),linspace(0.2, 2, 4),linspace(0.0005, 0.1, 4), opt_tuning_rule_ise, []);
+[optProc, list_of_deter]=getOptimalTuningRuleFromProcesses(list_of_processes);
 %% Testing generateProcessObjects FOIPTD_outer
-list_of_processes=generateProcessObjec ts('FOIPTD_outer', 1, linspace(0.2,2,3),[1],linspace(0.0005, 0.1, 3), quad_att);
-[optProc, list_of_deter]=getOptimalTuningRuleFromProcesses(list_of_processes,opt_tuning_rule_ise);
+list_of_processes=generateProcessObjects('FOIPTD_outer', 1, linspace(0.2,2,3),[1],linspace(0.0005, 0.1, 3), opt_tuning_rule_ise, quad_att);
+[optProc, list_of_deter]=getOptimalTuningRuleFromProcesses(list_of_processes);

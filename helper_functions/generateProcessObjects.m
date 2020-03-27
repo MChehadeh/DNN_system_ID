@@ -1,4 +1,4 @@
-function list_of_processes=generateProcessObjects(process_type, K, T1, T2, tau, inner_process)
+function list_of_processes=generateProcessObjects(process_type, K, T1, T2, tau, opt_tuning_rule, inner_process)
 K=0;%TODO: Include K
 
 if process_type == "SOIPTD"
@@ -35,6 +35,7 @@ if list_of_processes(1).sysOrder == 1
             list_of_processes(current_process).list_of_T(1)=T1(itr2);
             list_of_processes(current_process).K=1;
             list_of_processes(current_process).setID(current_process);
+            list_of_processes(current_process).findOptTuningRule(opt_tuning_rule);
         end
     end    
 elseif list_of_processes(1).sysOrder == 2
@@ -48,6 +49,7 @@ elseif list_of_processes(1).sysOrder == 2
                 list_of_processes(current_process).list_of_T(2)=T2(itr3);
                 list_of_processes(current_process).K=1;
                 list_of_processes(current_process).setID(current_process);
+                list_of_processes(current_process).findOptTuningRule(opt_tuning_rule);
             end
         end
     end 
