@@ -14,11 +14,12 @@ classdef MRFTResponse < handle
         response_u {mustBeNumeric}
         single_cycle_response_pv {mustBeNumeric}
         single_cycle_response_u {mustBeNumeric}
-        normalized_response_pv {mustBeNumeric}
-        normalized_response_u {mustBeNumeric}    
+        normalized_response_pv {mustBeNumeric}        
+        noisy_response_pv {mustBeNumeric}
         
         response_amplitude {mustBeNumeric}
         response_frequency {mustBeNumeric}
+        response_period {mustBeNumeric}
     end
     
     methods
@@ -40,20 +41,96 @@ classdef MRFTResponse < handle
             h_mrft = obj.mrftcontroller.h_relay;
             beta_mrft = obj.mrftcontroller.beta;     
             bias_relay = obj.input_bias();
-            [w0,a0]=TuningRule.get_w_mag_from_phase(open_loop_sys,rad2deg(asin(beta_mrft))-180);            
+            [w0,a0]=TuningRule.get_w_mag_from_phase(open_loop_sys,rad2deg(asin(beta_mrft))-180);  
             options = simset('SrcWorkspace','current');
             simOut = sim('MRFT_CONTROL.slx',[],options);
-            pv_data = simOut.logsout.get('pv');
-            obj.response_pv = pv_data.Values.Data;             
-            u_tot = simOut.logsout.get('u');
-            obj.response_u = u_tot.Values.Data;            
+            pv_data = logsout.get('pv');           
+            u_tot = logsout.get('u');
+            
+            obj.response_pv = pv_data.Values.Data;  
+            obj.response_u = u_tot.Values.Data;     
+            
+            obj.get_cycle()
+            obj.normalize_reponse()
         end
         
-        function get_cycle(obj)
+        function [pv, u] = get_cycle(obj)
+            %cycle is deterimented by two subsequent rising esgeds of the
+            %mrft controller output
+            cycle_start = 0;
+            cycle_end = 0;
+            
+            for j=1:length(obj.response_u)-10
+                if ((obj.response_u(end-j+1) - obj.response_u(end-j)) > 1.95 * obj.mrftcontroller.h_relay)
+                    if cycle_end == 0
+                        cycle_end = length(obj.response_u) - j;                    
+                    else
+                        cycle_start = length(obj.response_u) - j + 1;
+                        break;
+                    end
+                end
+            end
+            
+            obj.single_cycle_response_pv = obj.response_pv(cycle_start:cycle_end);
+            obj.single_cycle_response_u = obj.response_u(cycle_start:cycle_end);
+            
+            obj.response_period = (cycle_end - cycle_start) / obj.step_time;
+            obj.response_frequency = 1 / obj.response_period;
+            obj.response_amplitude = (max(obj.single_cycle_response_pv) - min(obj.single_cycle_response_pv)) / 2;
+            
+            pv = obj.response_pv(cycle_start:cycle_end);
+            u = obj.response_u(cycle_start:cycle_end);
         end
         
-        function normalize_reponse(obj)
+        function [pv, u] = normalize_reponse(obj)
+            pv_offset = (max(obj.single_cycle_response_pv) + min(obj.single_cycle_response_pv)) / 2;
+            obj.normalized_response_pv = obj.single_cycle_response_pv / obj.response_amplitude - pv_offset;        
         end
+        
+        function [pv, u] = add_noise(obj, noise_power)
+            obj.noise_power = noise_power;
+            obj.noisy_response_pv = obj.normalized_response_pv + noise_power * 2 * (rand(length(obj.normalized_response_pv), 1) - 1);        
+        end
+        
+        function [obj,Q,t,y]=getStep_normalized_at_phase(obj, PIDcontroller_obj, tuning_rule)
+          obj.set_T_sim();       
+          [~, g_open] = obj.get_open_TF;
+          [~, normalized_K] = normalize_gain_at_phase(obj, tuning_rule);
+          g_open = g_open * normalized_K / obj.K;          
+          [~,ctrl_tf]=PIDcontroller_obj.getTF;
+          g_fb =feedback(g_open*ctrl_tf,1);
+          [y,t] = step(g_fb,obj.T_sim);
+          val_err=1-y;
+          Q=trapz(t,val_err.*val_err)/obj.T_sim;
+          %Q=trapz(t,abs(val_err))/obj.T_sim;
+       end
+           
+       function copyobj(obj, reference_obj)
+         % Construct a new object based on a deep copy of the current
+         % object of this class by copying properties over.
+         props = properties(reference_obj);
+         for i = 1:length(props)
+            % Use Dynamic Expressions to copy the required property.
+            % For more info on usage of Dynamic Expressions, refer to
+            % the section "Creating Field Names Dynamically" in:
+            % web([docroot '/techdoc/matlab_prog/br04bw6-38.html#br1v5a9-1'])
+            obj.(props{i}) = reference_obj.(props{i});
+         end
+       end
+      
+       function obj_copy = returnCopy(obj)
+         % Construct a new object based on a deep copy of the current
+         % object of this class by copying properties over.
+         obj_copy = MRFTController;
+         props = properties(obj);
+         for i = 1:length(props)
+            % Use Dynamic Expressions to copy the required property.
+            % For more info on usage of Dynamic Expressions, refer to
+            % the section "Creating Field Names Dynamically" in:
+            % web([docroot '/techdoc/matlab_prog/br04bw6-38.html#br1v5a9-1'])
+            obj_copy.(props{i}) = obj.(props{i});
+         end
+      end
        
     end
 end
