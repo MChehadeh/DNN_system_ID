@@ -10,10 +10,13 @@ classdef MRFTResponse < handle
         input_bias {mustBeNumeric} = 0
         noise_power {mustBeNumeric} = 0        
         
+        response_t {mustBeNumeric}
         response_pv {mustBeNumeric}
         response_u {mustBeNumeric}
+        single_cycle_response_t {mustBeNumeric}
         single_cycle_response_pv {mustBeNumeric}
         single_cycle_response_u {mustBeNumeric}
+        normalized_response_t {mustBeNumeric}
         normalized_response_pv {mustBeNumeric}
         normalized_response_u {mustBeNumeric}    
         
@@ -38,15 +41,8 @@ classdef MRFTResponse < handle
             t_final = obj.T_sim;
             time_step = obj.step_time;
             h_mrft = obj.mrftcontroller.h_relay;
-            beta_mrft = obj.mrftcontroller.beta;     
-            bias_relay = obj.input_bias();
-            [w0,a0]=TuningRule.get_w_mag_from_phase(open_loop_sys,rad2deg(asin(beta_mrft))-180);            
-            options = simset('SrcWorkspace','current');
-            simOut = sim('MRFT_CONTROL.slx',[],options);
-            pv_data = simOut.logsout.get('pv');
-            obj.response_pv = pv_data.Values.Data;             
-            u_tot = simOut.logsout.get('u');
-            obj.response_u = u_tot.Values.Data;            
+            beta_mrft = obj.mrft
+            
         end
         
         function get_cycle(obj)
