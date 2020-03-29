@@ -21,14 +21,14 @@ target_joint_cost_tol = 0.03;
 %inner loop process
 quad_att=SOIPTD_process;
 quad_att.K=1;
-quad_att.tau=0.0121;
-quad_att.list_of_T=[0.02, 1.6889];
+quad_att.tau=0.0181;
+quad_att.list_of_T=[0.0273, 0.1979];
 
 quad_att.findOptTuningRule(tuning_rule_ise);
 
 %%
 %corner processes
-pivot_processes = generateProcessObjects('FOIPTD_outer', 1, [0.2, 2],[1],[0.0005, 0.1], tuning_rule_ise, quad_att);
+pivot_processes = generateProcessObjects('FOIPTD_outer', 1, [0.2, 6],[1],[0.0005, 0.1], tuning_rule_ise, quad_att);
 
 %%
 %discritize in theta directions

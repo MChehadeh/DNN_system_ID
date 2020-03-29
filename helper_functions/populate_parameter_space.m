@@ -17,6 +17,8 @@ tol_T1 = 0.05 * T1_limits(1);
 tol_T2 = 0.05 * T2_limits(1); 
 tol_tau = 0.05 * tau_limits(1); 
 
+iterator = 1;
+
 for i=1:length(theta_values)
     temp_theta = theta_values(i);
     for j=1:length(phi_values)
@@ -65,6 +67,7 @@ for i=1:length(theta_values)
                return
            end
            temp_process.findOptTuningRule(tuning_rules);
+           temp_process.id = iterator; iterator = iterator + 1;
            process_list = [process_list; temp_process.returnCopy()];
            
         else        
@@ -101,6 +104,7 @@ for i=1:length(theta_values)
                    %point is within limits
                    ray_representation = ray_representation + 1;
                    temp_process.findOptTuningRule(tuning_rules);
+                   temp_process.id = iterator; iterator = iterator + 1;
                    process_list = [process_list; temp_process.returnCopy()];
                 end
             end
@@ -118,6 +122,7 @@ for i=1:length(theta_values)
                    return
                end
                temp_process.findOptTuningRule(tuning_rules);
+               temp_process.id = iterator; iterator = iterator + 1;
                process_list = [process_list; temp_process.returnCopy()];
             end
          end

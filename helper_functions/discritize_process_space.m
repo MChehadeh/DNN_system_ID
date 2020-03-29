@@ -37,9 +37,9 @@ max_spherical_cor = max_value * discretize_vector + min_spherical_cor .* not(dis
 max_value_process.set_spherical_params(max_spherical_cor);
 max_value_process.findOptTuningRule(tuning_rule);
 
-[joint_cost,min_joint_cost] = get_joint_cost(min_value_process, max_value_process, tuning_rule);
+[joint_cost,~] = get_joint_cost(min_value_process, max_value_process, tuning_rule);
 
-if (min_joint_cost > target_joint_cost)
+if (joint_cost > target_joint_cost)
     temp_process_1 = min_value_process.returnCopy();
     temp_process_2 = max_value_process.returnCopy();
     
@@ -53,13 +53,13 @@ if (min_joint_cost > target_joint_cost)
         [~, min_over_point] = temp_process_2.get_spherical_params;
         start_point_complete = false;
         while(~start_point_complete)               
-            [joint_cost,min_joint_cost] = get_joint_cost(temp_process_1, temp_process_2, tuning_rule);
+            [joint_cost,~] = get_joint_cost(temp_process_1, temp_process_2, tuning_rule);
 
-            if abs(min_joint_cost-target_joint_cost)<=target_joint_cost_tolerance
+            if abs(joint_cost-target_joint_cost)<=target_joint_cost_tolerance
                start_point_complete = true; 
             else
                 %dividing approach
-                if (min_joint_cost>target_joint_cost)
+                if (joint_cost>target_joint_cost)
                     [~, min_over_point] = temp_process_2.get_spherical_params;
                 else
                     [~, max_under_point] = temp_process_2.get_spherical_params;
@@ -74,9 +74,9 @@ if (min_joint_cost > target_joint_cost)
         discrete_values = [discrete_values; dot(temp_end_point, discretize_vector)];
         list_of_processes = [list_of_processes; temp_process_2.returnCopy];
 
-        [joint_cost,min_joint_cost] = get_joint_cost(max_value_process, temp_process_2, tuning_rule);
+        [joint_cost,~] = get_joint_cost(max_value_process, temp_process_2, tuning_rule);
 
-        if (min_joint_cost < target_joint_cost + target_joint_cost_tolerance)
+        if (joint_cost < target_joint_cost + target_joint_cost_tolerance)
            complete = true; 
         else
             temp_process_1 = temp_process_2.returnCopy();

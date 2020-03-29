@@ -88,14 +88,14 @@ classdef Process < handle
           end
         end
         
-        function [obj,Q]=applyTuningRule(obj,tuning_rule)
+        function [obj,Q, t, y]=applyTuningRule(obj,tuning_rule)
           [~,g]=obj.get_open_TF;
           [w0,a0]=TuningRule.get_w_mag_from_phase(g,rad2deg(asin(tuning_rule.beta))-180);
           auxController=PIDcontroller;
           auxController.P=tuning_rule.c1/a0;
           Td=tuning_rule.c3*((2*pi)/w0);
           auxController.D=auxController.P*Td;
-          [~,Q]=obj.getStep(auxController);
+          [~, Q, t, y]=obj.getStep(auxController);
         end
               
        function [obj,Q,t,y]=getStep(obj,PIDcontroller_obj)

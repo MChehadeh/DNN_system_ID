@@ -8,9 +8,9 @@ function [radial_coefficient, radial_values] = discritize_ray(start_process, end
 
 temp_process = end_process.returnCopy();
     
-[joint_cost,min_joint_cost] = get_joint_cost(start_process, temp_process, tuning_rule);
+[joint_cost, ~] = get_joint_cost(start_process, temp_process, tuning_rule);
 
-if (min_joint_cost > target_joint_cost)
+if (joint_cost > target_joint_cost)
     
     
     [~, max_under_point] = start_process.get_spherical_params;
@@ -19,13 +19,13 @@ if (min_joint_cost > target_joint_cost)
     complete = false;
     while(~complete)  
         start_point_complete = false;               
-        [joint_cost,min_joint_cost] = get_joint_cost(start_process, temp_process, tuning_rule);
+        [joint_cost,~] = get_joint_cost(start_process, temp_process, tuning_rule);
 
-        if abs(min_joint_cost-target_joint_cost)<=target_joint_cost_tolerance
+        if abs(joint_cost-target_joint_cost)<=target_joint_cost_tolerance
            complete = true; 
         else
             %dividing approach
-            if (min_joint_cost>target_joint_cost)
+            if (joint_cost>target_joint_cost)
                 [~, min_over_point] = temp_process.get_spherical_params;
             else
                 [~, max_under_point] = temp_process.get_spherical_params;

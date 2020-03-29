@@ -50,8 +50,8 @@ classdef MRFTResponse < handle
             obj.response_pv = pv_data.Values.Data;  
             obj.response_u = u_tot.Values.Data;     
             
-            obj.get_cycle()
-            obj.normalize_reponse()
+            obj.get_cycle();
+            obj.normalize_reponse();
         end
         
         function [pv, u] = get_cycle(obj)
@@ -74,7 +74,7 @@ classdef MRFTResponse < handle
             obj.single_cycle_response_pv = obj.response_pv(cycle_start:cycle_end);
             obj.single_cycle_response_u = obj.response_u(cycle_start:cycle_end);
             
-            obj.response_period = (cycle_end - cycle_start) / obj.step_time;
+            obj.response_period = (cycle_end - cycle_start) * obj.step_time;
             obj.response_frequency = 1 / obj.response_period;
             obj.response_amplitude = (max(obj.single_cycle_response_pv) - min(obj.single_cycle_response_pv)) / 2;
             
@@ -84,26 +84,13 @@ classdef MRFTResponse < handle
         
         function [pv, u] = normalize_reponse(obj)
             pv_offset = (max(obj.single_cycle_response_pv) + min(obj.single_cycle_response_pv)) / 2;
-            obj.normalized_response_pv = obj.single_cycle_response_pv / obj.response_amplitude - pv_offset;        
+            obj.normalized_response_pv = (obj.single_cycle_response_pv - pv_offset) / obj.response_amplitude ;        
         end
         
         function [pv, u] = add_noise(obj, noise_power)
             obj.noise_power = noise_power;
             obj.noisy_response_pv = obj.normalized_response_pv + noise_power * 2 * (rand(length(obj.normalized_response_pv), 1) - 1);        
         end
-        
-        function [obj,Q,t,y]=getStep_normalized_at_phase(obj, PIDcontroller_obj, tuning_rule)
-          obj.set_T_sim();       
-          [~, g_open] = obj.get_open_TF;
-          [~, normalized_K] = normalize_gain_at_phase(obj, tuning_rule);
-          g_open = g_open * normalized_K / obj.K;          
-          [~,ctrl_tf]=PIDcontroller_obj.getTF;
-          g_fb =feedback(g_open*ctrl_tf,1);
-          [y,t] = step(g_fb,obj.T_sim);
-          val_err=1-y;
-          Q=trapz(t,val_err.*val_err)/obj.T_sim;
-          %Q=trapz(t,abs(val_err))/obj.T_sim;
-       end
            
        function copyobj(obj, reference_obj)
          % Construct a new object based on a deep copy of the current
@@ -121,7 +108,7 @@ classdef MRFTResponse < handle
        function obj_copy = returnCopy(obj)
          % Construct a new object based on a deep copy of the current
          % object of this class by copying properties over.
-         obj_copy = MRFTController;
+         obj_copy = MRFTResponse(Process, MRFTController(0,0), 0, 0);
          props = properties(obj);
          for i = 1:length(props)
             % Use Dynamic Expressions to copy the required property.

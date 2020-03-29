@@ -26,9 +26,9 @@ opt_tuning_rule_iae.beta_min=-0.9;
 opt_tuning_rule_iae.beta_max=-0.1;
 
 quad_att=SOIPTD_process;
-quad_att.K=5;
-quad_att.tau=0.0121;
-quad_att.list_of_T=[0.02, 0.5];
+quad_att.K=1;
+quad_att.tau=0.0181;
+quad_att.list_of_T=[0.0273, 0.1979];
 
 quad_att.findOptTuningRule(opt_tuning_rule_ise)
 quad_att.applyOptTuningRule(quad_att.optTuningRule)
@@ -47,5 +47,5 @@ quad_pos.applyTuningRule(quad_pos.optTuningRule)
 list_of_processes=generateProcessObjects('SOIPTD', 1, linspace(0.015,0.3,4),linspace(0.2, 2, 4),linspace(0.0005, 0.1, 4), opt_tuning_rule_ise, []);
 [optProc, list_of_deter]=getOptimalTuningRuleFromProcesses(list_of_processes);
 %% Testing generateProcessObjects FOIPTD_outer
-list_of_processes=generateProcessObjects('FOIPTD_outer', 1, linspace(0.2,2,3),[1],linspace(0.0005, 0.1, 3), opt_tuning_rule_ise, quad_att);
+list_of_processes=generateProcessObjects('FOIPTD_outer', 1, linspace(0.2,6,3),[1],linspace(0.0005, 0.1, 3), opt_tuning_rule_ise, quad_att);
 [optProc, list_of_deter]=getOptimalTuningRuleFromProcesses(list_of_processes);
