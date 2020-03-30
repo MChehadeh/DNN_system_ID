@@ -1,7 +1,7 @@
 clear all
 close all
 clc
-addpath('helper_functions')
+addpath(genpath(pwd))
 %% Testing TOPTD_process, PIDcontroller and TuningRule
 opt_tuning_rule_ise=TuningRule;
 opt_tuning_rule_ise.rule_type=TuningRuleType.pm_based;

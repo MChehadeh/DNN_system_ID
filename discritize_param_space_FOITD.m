@@ -1,6 +1,6 @@
 %Discritization parameters
 clear all
-addpath('helper_functions')
+addpath(genpath(pwd))
 
 %%
 tuning_rule_ise=TuningRule;

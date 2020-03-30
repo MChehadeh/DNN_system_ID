@@ -1,2 +1,0 @@
-  MRFT_CONTROL_acc.c
-

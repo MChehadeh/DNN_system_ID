@@ -1,6 +1,6 @@
 %%
 clear all
-addpath("helper_functions")
+addpath(genpath(pwd))
 
 %%
 %load list of responses
