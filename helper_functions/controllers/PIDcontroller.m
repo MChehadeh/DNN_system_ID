@@ -9,14 +9,15 @@ classdef PIDcontroller < handle
            TF=pid(obj.P,obj.I,obj.D);
        end
        
-       function [obj, TF] = getFeedbackTF(obj, processTF)
+       function [obj, TF] = getFeedbackTF(obj, process)
            % This function return the feedback transfer function when the
            % PID controller is applied to a process. The D term is applied
            % to the derivative of the process value rather than the error
            % signal to avoid derivative kick.
-           g_D = processTF / (1 + processTF * pid(0,0, obj.D));
+           [~, g_open] = process.get_open_TF(false);
+           g_D = g_open / (1 + g_open * pid(0,0, obj.D) * tf([1],[1],'IODelay',process.tau));
            g_PID = pid(obj.P, obj.I,0) * g_D;
-           TF = g_PID / (1+g_PID);           
+           TF = g_PID / (1 + g_PID * tf([1],[1],'IODelay',process.tau));  
        end
        
        function copyobj(obj, reference_obj)

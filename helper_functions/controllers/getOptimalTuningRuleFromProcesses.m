@@ -1,4 +1,4 @@
-function [procAssociatedWithOptTuningRule, list_of_max_deter]=getOptimalTuningRugit frrgleFromProcesses(list_of_processes)
+function [procAssociatedWithOptTuningRule, list_of_max_deter]=getOptimalTuningRuleFromProcesses(list_of_processes)
 
 list_of_worst_deter = zeros(length(list_of_processes), 0);
 

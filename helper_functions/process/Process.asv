@@ -34,11 +34,16 @@ classdef Process < handle
         
         function [obj,g]=get_open_TF(obj, varargin)
             if nargin > 1
-              incorporate_delay = varargin{1};
-            else
               incorporate_delay = true;
+            else
+              incorporate_delay = varargin{;
             end
-            g= tf([obj.K],[obj.list_of_T(1) 1]);
+            if(incorporate_delay)
+                g = tf([1],[1], 'IODelay', obj.tau);
+            else
+                g = 1;
+            end
+            g= g * tf([obj.K],[obj.list_of_T(1) 1]);
             for i=2:obj.sysOrder
                 g = g * tf([1],[obj.list_of_T(i), 1]);
             end
