@@ -44,8 +44,9 @@ classdef Process < handle
         
         function [obj,g]=get_closed_TF(obj)
             [~, g_open] = obj.get_open_TF;
-            [~,ctrl_tf]=obj.optController.getTF;
-            g =feedback(g_open*ctrl_tf,1);
+            [~, g] = obj.optController.getFeedbackTF(g_open);
+%             [~,ctrl_tf]=obj.optController.getTF;
+%             g =feedback(g_open*ctrl_tf,1);
         end
         
         function obj = findOptTuningRule(obj,optimization_parameters)
@@ -101,8 +102,9 @@ classdef Process < handle
        function [obj,Q,t,y]=getStep(obj,PIDcontroller_obj)
           obj.set_T_sim();       
           [~, g_open] = obj.get_open_TF;
-          [~,ctrl_tf]=PIDcontroller_obj.getTF;
-          g_fb =feedback(g_open*ctrl_tf,1);
+          %[~,ctrl_tf]=PIDcontroller_obj.getTF;
+          %g_fb =feedback(g_open*ctrl_tf,1);
+          [~, g_fb] = PIDcontroller_obj.getFeedbackTF(g_open);
           [y,t] = step(g_fb,obj.T_sim);
           val_err=1-y;
           Q=trapz(t,val_err.*val_err)/obj.T_sim;
@@ -113,6 +115,36 @@ classdef Process < handle
            if (obj.T_sim==0)
               obj.T_sim=max([obj.tau obj.list_of_T])*30; %TODO handle when proc parameters change
            end   
+       end
+       
+       function [obj]=set_time_params(obj, time_params)
+           T1 = time_params(1);
+           T2 = time_params(2);
+           tau = time_params(3);
+           if obj.sysOrder == 2
+             obj.list_of_T = [T1, T2];
+             obj.tau = tau;
+           elseif obj.sysOrder == 1
+             obj.list_of_T = [T1];
+             obj.tau =tau;
+           else 
+               warning("Not implemented: spherical conversion for systems wuth order higher than 2 not implemented") 
+           end
+       end
+       
+       function [obj, time_params]=get_time_params(obj)
+           if obj.sysOrder == 2
+             T1=obj.list_of_T(1);
+             T2=obj.list_of_T(2);
+             tau=obj.tau;
+           elseif obj.sysOrder == 1
+             T1=obj.list_of_T(1);
+             T2=0;%theta
+             tau=obj.tau;
+           else 
+               warning("Not implemented: spherical conversion for systems wuth order higher than 2 not implemented") 
+           end
+           time_params = [T1, T2, tau];
        end
        
        function [obj]=set_spherical_params(obj, spherical_cor)
@@ -153,8 +185,7 @@ classdef Process < handle
        
        function [obj, normalized_controller] = get_normalized_optController(obj, tuning_rule)
            [~, normalized_K] = normalize_gain_at_phase(obj, tuning_rule);
-           normalized_controller = PIDcontroller;
-           normalized_controller.copyobj(obj.optController);
+           normalized_controller = obj.optController.returnCopy();
            normalized_controller.P = obj.optController.P * obj.K / normalized_K;
            normalized_controller.D = obj.optController.D * obj.K / normalized_K;
        end
@@ -164,8 +195,9 @@ classdef Process < handle
           [~, g_open] = obj.get_open_TF;
           [~, normalized_K] = normalize_gain_at_phase(obj, tuning_rule);
           g_open = g_open * normalized_K / obj.K;          
-          [~,ctrl_tf]=PIDcontroller_obj.getTF;
-          g_fb =feedback(g_open*ctrl_tf,1);
+%           [~,ctrl_tf]=PIDcontroller_obj.getTF;
+%           g_fb =feedback(g_open*ctrl_tf,1);
+          [~, g_fb] = PIDcontroller_obj.getFeedbackTF(g_open);
           [y,t] = step(g_fb,obj.T_sim);
           val_err=1-y;
           Q=trapz(t,val_err.*val_err)/obj.T_sim;
@@ -197,7 +229,7 @@ classdef Process < handle
             % web([docroot '/techdoc/matlab_prog/br04bw6-38.html#br1v5a9-1'])
             obj_copy.(props{i}) = obj.(props{i});
          end
-      end
+       end
    end
    
 end
