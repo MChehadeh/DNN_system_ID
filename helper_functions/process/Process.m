@@ -52,10 +52,6 @@ classdef Process < handle
         
         function [obj,g]=get_closed_TF(obj)
             [~, g] = obj.optController.getFeedbackTF(obj);
-%             [~, g_open] = obj.get_open_TF;
-%             [~, g] = obj.optController.getFeedbackTF(g_open);
-%             [~,ctrl_tf]=obj.optController.getTF;
-%             g =feedback(g_open*ctrl_tf,1);
         end
         
         function obj = findOptTuningRule(obj,optimization_parameters)
@@ -99,7 +95,7 @@ classdef Process < handle
         end
         
         function [obj,Q, t, y]=applyTuningRule(obj,tuning_rule)
-          [~,g]=obj.get_open_TF;
+          [~,g]=obj.get_open_TF(true);
           [w0,a0]=TuningRule.get_w_mag_from_phase(g,rad2deg(asin(tuning_rule.beta))-180);
           auxController=PIDcontroller;
           auxController.P=tuning_rule.c1/a0;
@@ -110,13 +106,25 @@ classdef Process < handle
               
        function [obj,Q,t,y]=getStep(obj,PIDcontroller_obj)
           obj.set_T_sim();       
-%           [~, g_open] = obj.get_open_TF;
-          %[~,ctrl_tf]=PIDcontroller_obj.getTF;
-          %g_fb =feedback(g_open*ctrl_tf,1);
-          [~, g_fb] = PIDcontroller_obj.getFeedbackTF(obj);
-          [y,t] = step(g_fb,obj.T_sim);
+          t_final = obj.T_sim;
+          [~, g_open] = obj.get_open_TF(false);
+          tau = obj.tau;
+          P = PIDcontroller_obj.P;
+          D = PIDcontroller_obj.D;       
+          load_system("PD_control.slx")
+          set_param('PD_CONTROL','FastRestart','on');
+          options = simset('SrcWorkspace','current');
+          simOut = sim('PD_CONTROL.slx',[],options);
+          y_data = simOut.logsout.get('pv');     
+          t = y_data.Values.Time;  
+          y = y_data.Values.Data;          
           val_err=1-y;
-          Q=trapz(t,val_err.*val_err)/obj.T_sim;
+          simulation_status=simOut.logsout.get('simulation_status');
+          if (sum(simulation_status.Values.Data)>0)
+              Q=10e25;
+          else          
+              Q=trapz(t,val_err.*val_err)/obj.T_sim;
+          end
           %Q=trapz(t,abs(val_err))/obj.T_sim;
        end
        
@@ -201,16 +209,11 @@ classdef Process < handle
        
        function [obj,Q,t,y]=getStep_normalized_at_phase(obj, PIDcontroller_obj, tuning_rule)
           obj.set_T_sim();       
-          [~, g_open] = obj.get_open_TF;
+          [~, g_open] = obj.get_open_TF(false);
           [~, normalized_K] = normalize_gain_at_phase(obj, tuning_rule);
-          g_open = g_open * normalized_K / obj.K;          
-%           [~,ctrl_tf]=PIDcontroller_obj.getTF;
-%           g_fb =feedback(g_open*ctrl_tf,1);
-          [~, g_fb] = PIDcontroller_obj.getFeedbackTF(g_open);
-          [y,t] = step(g_fb,obj.T_sim);
-          val_err=1-y;
-          Q=trapz(t,val_err.*val_err)/obj.T_sim;
-          %Q=trapz(t,abs(val_err))/obj.T_sim;
+          normalized_process = obj.returnCopy();
+          normalized_process.K = normalized_K;
+          [~,Q,t,y] = normalized_process.getStep(PIDcontroller_obj);
        end
            
        function copyobj(obj, reference_obj)

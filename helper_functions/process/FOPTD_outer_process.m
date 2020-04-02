@@ -22,7 +22,39 @@ classdef FOPTD_outer_process < Outer_loop_process
             % web([docroot '/techdoc/matlab_prog/br04bw6-38.html#br1v5a9-1'])
             obj_copy.(props{i}) = obj.(props{i});
          end
-      end
+     end
+      
+     function [obj,Q,t,y]=getStep(obj,PIDcontroller_obj)
+          obj.set_T_sim();       
+          t_final = obj.T_sim;
+          [~, g_open] = obj.get_open_TF(false);
+          K = obj.K;
+          T1 = obj.list_of_T(1);
+          tau = obj.tau;
+          P = PIDcontroller_obj.P;
+          D = PIDcontroller_obj.D;   
+          K_inner = obj.inner_loop_process.K;
+          T1_inner = obj.inner_loop_process.list_of_T(1);
+          T2_inner = obj.inner_loop_process.list_of_T(2);
+          tau_inner = obj.inner_loop_process.tau;
+          P_inner = obj.inner_loop_process.optController.P;
+          D_inner = obj.inner_loop_process.optController.D;
+          load_system("PD_controller_for_FOPTD_with_inner_SOIPTD_parametric.slx")
+          set_param('PD_controller_for_FOPTD_with_inner_SOIPTD_parametric','FastRestart','on');
+          options = simset('SrcWorkspace','current');
+          simOut = sim('PD_controller_for_FOPTD_with_inner_SOIPTD_parametric.slx',[],options);
+          y_data = simOut.logsout.get('pv');     
+          t = y_data.Values.Time;  
+          y = y_data.Values.Data;          
+          val_err=1-y;
+          simulation_status=simOut.logsout.get('simulation_status');
+          if (sum(simulation_status.Values.Data)>0)
+              Q=10e25;
+          else          
+              Q=trapz(t,val_err.*val_err)/obj.T_sim;
+          end
+          %Q=trapz(t,abs(val_err))/obj.T_sim;
+       end
      
    end
 end
