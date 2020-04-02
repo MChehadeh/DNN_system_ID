@@ -11,7 +11,7 @@ load("FOIPTD_discretization", "list_of_discrete_processes")
 time_step = 0.001;
 t_final = 10; %final simulation time
 
-N_response_per_process = 30; %number of times each process point is simulated 
+N_response_per_process = 1; %number of times each process point is simulated 
 
 mrft_controller = MRFTController(-0.5502, 1);
 

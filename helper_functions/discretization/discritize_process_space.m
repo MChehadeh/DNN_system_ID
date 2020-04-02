@@ -7,10 +7,12 @@ function [discrete_values, list_of_processes] = discritize_process_space(pivot_p
 
 if discritize_basis=="T1"
     discretize_vector = [1 0 0];
+    N_sensitive_point = 3;
 elseif discritize_basis=="T2"
     discretize_vector = [0 1 0];
 elseif discritize_basis=="tau"
     discretize_vector = [0 0 1];
+    N_sensitive_point = 1;
 else
     warning("not implemented: only discritization in theta or phi directions are permited")
     return
@@ -31,7 +33,7 @@ for i=1:length(pivot_points)
     end
 end
 
-min_value_process = pivot_points(1).returnCopy();%Override to maximum time delay %TODO: use most sensitive
+min_value_process = pivot_points(N_sensitive_point).returnCopy();%Override to maximum time delay %TODO: use most sensitive
 
 [~, min_time_point] = min_value_process.get_time_params;
 max_value_process = min_value_process.returnCopy;
@@ -57,7 +59,7 @@ if (joint_cost > target_joint_cost)
         while(~start_point_complete)               
             [joint_cost,~] = get_joint_cost(temp_process_1, temp_process_2, tuning_rule);
 
-            if abs(joint_cost-target_joint_cost)<=target_joint_cost_tolerance
+           if abs(joint_cost-target_joint_cost)<=target_joint_cost_tolerance
                start_point_complete = true; 
             else
                 %dividing approach
