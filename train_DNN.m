@@ -6,7 +6,7 @@ addpath(genpath(pwd))
 %load list of responses
 load("FOIPTD_system_responses", "list_of_responses") 
 
-[Xtrain, Ytrain] = prepareDNNData(list_of_responses, 1000);
+[Xtrain, Ytrain] = prepareDNNData(list_of_responses, 3000);
 
 %% 
 %DNN structure
@@ -26,7 +26,7 @@ DNN = [
     reluLayer() 
     batchNormalizationLayer
     dropoutLayer(0.4)
-    fullyConnectedLayer(10, 'name', 'finalLayer')
+    fullyConnectedLayer(16, 'name', 'finalLayer')
     softmaxLayer() %needs to be the dummy softmax
     classificationLayer];
 
@@ -34,4 +34,32 @@ DNN = [
 trained_DNN = trainNetwork(Xtrain, categorical(Ytrain), DNN, options)
 
 %%
-Y_resuts = classify(trained_DNN, Xtrain);
+%testing
+load("FOIPTD_system_responses_testing", "list_of_responses") 
+
+[Xtest, Ytest] = prepareDNNData(list_of_responses, 3000);
+
+Ytest_classes = classify(trained_DNN, Xtest); 
+
+correct=0;
+wrong=0;
+for i=1:length(Ytest)
+    if (double(Ytest_classes(i)) == Ytest(i))
+        correct = correct+1;
+    else
+        wrong = wrong+1;
+    end
+end
+accuracy = 100 * correct / (correct+wrong)
+
+%%
+%joint cost
+load('discrete_processes_FOIPTD.mat', 'joint_cost')
+cost = zeros(length(Ytest_classes),1);
+for i=1:length(Ytest_classes)
+    cost(i) = joint_cost(Ytest_classes(i), Ytest(i));
+end
+
+avg_cost = sum(cost) / length(cost);
+max_cost = max(cost);
+

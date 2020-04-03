@@ -41,3 +41,7 @@ pivot_processes = generateProcessObjects('FOIPTD_outer', 1, [0.2, 6],[1],[0.0005
 %%
 %populate parameter space based on discrete values from discrete angular values of spherical coordinate system
 list_of_discrete_processes = generateProcessObjects('FOIPTD_outer', 1, discrete_T1_values,[1],discrete_tau_values, tuning_rule_ise, quad_att);
+
+%%
+%Generate joint cost matrix
+joint_cost = generate_joint_cost_matrix(list_of_discrete_processes, tuning_rule_PD);

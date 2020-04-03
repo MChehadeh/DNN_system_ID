@@ -4,14 +4,14 @@ addpath(genpath(pwd))
 
 %%
 %load list of processes
-load("FOIPTD_discretization", "list_of_discrete_processes")
+load("discrete_processes_FOIPTD", "list_of_discrete_processes")
 
 %%
 %Data generation properties
 time_step = 0.001;
 t_final = 10; %final simulation time
 
-N_response_per_process = 1; %number of times each process point is simulated 
+N_response_per_process = 3; %number of times each process point is simulated 
 
 mrft_controller = MRFTController(-0.5502, 1);
 
@@ -35,5 +35,4 @@ for i=1:length(list_of_discrete_processes)
         list_of_responses = [list_of_responses; temp_mrft_response.returnCopy()];
     end
 end
-
 
