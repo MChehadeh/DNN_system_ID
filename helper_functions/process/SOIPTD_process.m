@@ -19,6 +19,7 @@ classdef SOIPTD_process < Process
           tau = obj.tau;
           P = PIDcontroller_obj.P;
           D = PIDcontroller_obj.D;   
+          I = PIDcontroller_obj.I;   
           load_system("PD_controller_for_SOIPTD_parametric.slx")
           set_param('PD_controller_for_SOIPTD_parametric','FastRestart','on');
           options = simset('SrcWorkspace','current');

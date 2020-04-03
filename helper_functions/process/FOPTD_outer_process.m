@@ -32,13 +32,15 @@ classdef FOPTD_outer_process < Outer_loop_process
           T1 = obj.list_of_T(1);
           tau = obj.tau;
           P = PIDcontroller_obj.P;
-          D = PIDcontroller_obj.D;   
+          D = PIDcontroller_obj.D;  
+          I = PIDcontroller_obj.I;    
           K_inner = obj.inner_loop_process.K;
           T1_inner = obj.inner_loop_process.list_of_T(1);
           T2_inner = obj.inner_loop_process.list_of_T(2);
           tau_inner = obj.inner_loop_process.tau;
           P_inner = obj.inner_loop_process.optController.P;
           D_inner = obj.inner_loop_process.optController.D;
+          I_inner = obj.inner_loop_process.optController.I;
           load_system("PD_controller_for_FOPTD_with_inner_SOIPTD_parametric.slx")
           set_param('PD_controller_for_FOPTD_with_inner_SOIPTD_parametric','FastRestart','on');
           options = simset('SrcWorkspace','current');

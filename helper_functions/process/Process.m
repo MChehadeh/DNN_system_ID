@@ -55,7 +55,7 @@ classdef Process < handle
         end
         
         function obj = findOptTuningRule(obj,optimization_parameters)
-          [a,obj.optCost,exitflag] = fminsearchbnd((@Process_simulator_beta_pm),[optimization_parameters.beta optimization_parameters.pm],[optimization_parameters.beta_min optimization_parameters.pm_min],[optimization_parameters.beta_max optimization_parameters.pm_max],optimset('MaxFunEvals',10000,'MaxIter',10000,'TolFun',1e-8,'TolX',1e-10,'Display','none'),obj);
+          [a,obj.optCost,exitflag] = fminsearchbnd((@Process_simulator_beta_pm),[optimization_parameters.beta optimization_parameters.pm],[optimization_parameters.beta_min optimization_parameters.pm_min],[optimization_parameters.beta_max optimization_parameters.pm_max],optimset('MaxFunEvals',10000,'MaxIter',10000,'TolFun',1e-8,'TolX',1e-10,'Display','none'),obj, optimization_parameters);
           obj.optTuningRule.copyobj(optimization_parameters);
           obj.optTuningRule.setTuningParametersBetaPM(a(1),a(2));
           obj.applyOptTuningRule(obj.optTuningRule);
@@ -66,6 +66,8 @@ classdef Process < handle
           [w0,a0]=TuningRule.get_w_mag_from_phase(g,rad2deg(asin(tuning_rule.beta))-180);
           obj.optController=PIDcontroller;
           obj.optController.P=tuning_rule.c1/a0;
+          Ti=tuning_rule.c2*((2*pi)/w0);
+          obj.optController.I=obj.optController.P/Ti;
           Td=tuning_rule.c3*((2*pi)/w0);
           obj.optController.D=obj.optController.P*Td;
           [~,obj.optCost]=obj.getStep(obj.optController);
@@ -76,6 +78,8 @@ classdef Process < handle
           [w0,a0]=TuningRule.get_w_mag_from_phase(g,rad2deg(asin(tuning_rule.beta))-180);
           res_controller=PIDcontroller;
           res_controller.P=tuning_rule.c1/a0;
+          Ti=tuning_rule.c2*((2*pi)/w0);
+          res_controller.I=res_controller.P/Ti;
           Td=tuning_rule.c3*((2*pi)/w0);
           res_controller.D=res_controller.P*Td;
           [~,Q_sub]=obj.getStep(res_controller);
@@ -99,6 +103,8 @@ classdef Process < handle
           [w0,a0]=TuningRule.get_w_mag_from_phase(g,rad2deg(asin(tuning_rule.beta))-180);
           auxController=PIDcontroller;
           auxController.P=tuning_rule.c1/a0;
+          Ti=tuning_rule.c2*((2*pi)/w0);
+          auxController.I=auxController.P/Ti;
           Td=tuning_rule.c3*((2*pi)/w0);
           auxController.D=auxController.P*Td;
           [~, Q, t, y]=obj.getStep(auxController);

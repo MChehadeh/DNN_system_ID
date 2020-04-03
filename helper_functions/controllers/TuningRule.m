@@ -14,12 +14,28 @@ classdef TuningRule < handle
         gm_min {mustBeNumeric}=0
         gm_max {mustBeNumeric}=1000
         rule_type TuningRuleType = TuningRuleType.pm_based
+        controller_type = controllerType.PD
     end
    methods 
        function obj=setTuningParametersBetaPM(obj,beta_para,pm_para)
            obj.beta=beta_para;
            obj.pm=pm_para;
-           [obj.c1,obj.c3]=calculate_tuning_parameters_beta_pm( beta_para,pm_para );
+           [obj.c1, obj.c2, obj.c3]=obj.calculate_tuning_parameters_beta_pm();
+       end
+       
+       function [ c1,c2,c3,phase_co ] = calculate_tuning_parameters_beta_pm(obj )
+            total_phase=rad2deg(asin(obj.beta));
+            x=tan(deg2rad(total_phase-obj.pm));
+            if obj.controller_type == controllerType.PD
+                c3=x/(-2*pi);
+                c2 = inf;
+                c1=1/sqrt(1+4*pi*pi*c3*c3);
+            elseif obj.controller_type == controllerType.PI
+                c3 = 0;
+                c2 = 1 / (2*pi*x);
+                c1=1/sqrt(1+(1/(4*pi*pi*c2*c2)));
+            end
+            phase_co=total_phase-180;
        end
        
        function copyobj(obj, reference_obj)
@@ -65,17 +81,6 @@ classdef TuningRule < handle
                 w   = interp1( squeeze(phase), wout, p);
             end
            
-       end
-       function [ c1,c3,phase_co ] = calculate_tuning_parameters_beta_pm( beta,pm )
-            total_phase=rad2deg(asin(beta));
-            x=tan(deg2rad(total_phase-pm));
-            c3=x/(-2*pi);
-            c1=1/sqrt(1+4*pi*pi*c3*c3);
-            phase_co=total_phase-180;
-       end
-       function [ c1,phase_co ] = calculate_tuning_parameters_pm_c3( pm,c3 )
-            c1=1/sqrt(1+4*pi*pi*c3*c3);
-            phase_co=pm+rad2deg(atan(-2*pi*c3))-180;
        end
 
    end
