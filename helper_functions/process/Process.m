@@ -55,9 +55,9 @@ classdef Process < handle
         end
         
         function obj = findOptTuningRule(obj,optimization_parameters)
-          [a,obj.optCost,exitflag] = fminsearchbnd((@Process_simulator_beta_pm),[optimization_parameters.beta optimization_parameters.pm],[optimization_parameters.beta_min optimization_parameters.pm_min],[optimization_parameters.beta_max optimization_parameters.pm_max],optimset('MaxFunEvals',10000,'MaxIter',10000,'TolFun',1e-8,'TolX',1e-10,'Display','none'),obj, optimization_parameters);
+          [a,obj.optCost,exitflag] = fminsearchbnd((@Process_simulator_beta_pm),[optimization_parameters.beta optimization_parameters.getTuningRuleMargin()],[optimization_parameters.beta_min optimization_parameters.getTuningRuleMarginLimits().min],[optimization_parameters.beta_max optimization_parameters.getTuningRuleMarginLimits().max],optimset('MaxFunEvals',10000,'MaxIter',10000,'TolFun',1e-8,'TolX',1e-10,'Display','none'),obj, optimization_parameters);
           obj.optTuningRule.copyobj(optimization_parameters);
-          obj.optTuningRule.setTuningParametersBetaPM(a(1),a(2));
+          obj.optTuningRule.setTuningParameters(a(1),a(2));
           obj.applyOptTuningRule(obj.optTuningRule);
         end
         
@@ -111,12 +111,13 @@ classdef Process < handle
         end
               
        function [obj,Q,t,y]=getStep(obj,PIDcontroller_obj)
-          obj.set_T_sim();       
+          obj.set_T_sim();     
           t_final = obj.T_sim;
           [~, g_open] = obj.get_open_TF(false);
           tau = obj.tau;
           P = PIDcontroller_obj.P;
           D = PIDcontroller_obj.D;       
+          I = PIDcontroller_obj.I;
           load_system("PD_control.slx")
           set_param('PD_CONTROL','FastRestart','on');
           options = simset('SrcWorkspace','current');
@@ -211,6 +212,7 @@ classdef Process < handle
            normalized_controller = obj.optController.returnCopy();
            normalized_controller.P = obj.optController.P * obj.K / normalized_K;
            normalized_controller.D = obj.optController.D * obj.K / normalized_K;
+           normalized_controller.I = obj.optController.I * obj.K / normalized_K;
        end
        
        function [obj,Q,t,y]=getStep_normalized_at_phase(obj, PIDcontroller_obj, tuning_rule)

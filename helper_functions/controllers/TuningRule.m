@@ -17,25 +17,52 @@ classdef TuningRule < handle
         controller_type = controllerType.PD
     end
    methods 
-       function obj=setTuningParametersBetaPM(obj,beta_para,pm_para)
+       function obj=setTuningParameters(obj,beta_para, stability_margin)
            obj.beta=beta_para;
-           obj.pm=pm_para;
-           [obj.c1, obj.c2, obj.c3]=obj.calculate_tuning_parameters_beta_pm();
+           if obj.rule_type == TuningRuleType.pm_based
+            obj.pm=stability_margin;
+           elseif obj.rule_type == TuningRuleType.gm_based
+            obj.gm=stability_margin;
+           end
+           [obj.c1, obj.c2, obj.c3]=obj.calculate_tuning_parameters();
        end
        
-       function [ c1,c2,c3,phase_co ] = calculate_tuning_parameters_beta_pm(obj )
+       function [ c1,c2,c3,phase_co ] = calculate_tuning_parameters(obj)
             total_phase=rad2deg(asin(obj.beta));
-            x=tan(deg2rad(total_phase-obj.pm));
-            if obj.controller_type == controllerType.PD
+            %TODO: incorporate controller type
+            if obj.rule_type == TuningRuleType.pm_based
+                %phase margin constraint
+                x=tan(deg2rad(total_phase-obj.pm));
                 c3=x/(-2*pi);
                 c2 = inf;
                 c1=1/sqrt(1+4*pi*pi*c3*c3);
-            elseif obj.controller_type == controllerType.PI
+            elseif obj.rule_type == TuningRuleType.gm_based
+                %gain margin constraint
+                x=tan(deg2rad(total_phase));
                 c3 = 0;
                 c2 = 1 / (2*pi*x);
-                c1=1/sqrt(1+(1/(4*pi*pi*c2*c2)));
+                c1=1/(obj.gm *sqrt(1+(1/(4*pi*pi*c2*c2))));
             end
             phase_co=total_phase-180;
+       end
+       
+       function margin = getTuningRuleMargin(obj)
+           if obj.rule_type == TuningRuleType.pm_based
+            margin = obj.pm;
+           elseif obj.rule_type == TuningRuleType.gm_based
+            margin = obj.gm;
+           end
+       end
+       
+       function margins = getTuningRuleMarginLimits(obj)
+           if obj.rule_type == TuningRuleType.pm_based
+            min = obj.pm_min;
+            max = obj.pm_max;
+           elseif obj.rule_type == TuningRuleType.gm_based
+            min = obj.gm_min;
+            max = obj.gm_max;
+           end
+           margins = struct("min",min,"max",max);
        end
        
        function copyobj(obj, reference_obj)
@@ -50,6 +77,7 @@ classdef TuningRule < handle
             obj.(props{i}) = reference_obj.(props{i});
          end
        end
+       
        function obj_copy = returnCopy(obj)
          % Construct a new object based on a deep copy of the current
          % object of this class by copying properties over.
