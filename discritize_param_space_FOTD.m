@@ -5,15 +5,27 @@ addpath(genpath(pwd))
 %%
 tuning_rule_PI=TuningRule;
 tuning_rule_PI.rule_type=TuningRuleType.pm_based;
-tuning_rule_PI.beta=0.9;
-tuning_rule_PI.pm=49.58557;
+tuning_rule_PI.beta=0.9538;
+tuning_rule_PI.pm=54.0838;
 tuning_rule_PI.c1=0.3849;
 tuning_rule_PI.c3=0.3817;
 tuning_rule_PI.pm_min=20;
 tuning_rule_PI.pm_max=90;
-tuning_rule_PI.beta_min=-0.9;
-tuning_rule_PI.beta_max=0.9;
+tuning_rule_PI.beta_min=-1;
+tuning_rule_PI.beta_max=1;
 tuning_rule_PI.controller_type = controllerType.PI;
+
+tuning_rule_PD=TuningRule;
+tuning_rule_PD.rule_type=TuningRuleType.pm_based;
+tuning_rule_PD.beta=-0.7;
+tuning_rule_PD.pm=54.0838;
+tuning_rule_PD.c1=0.3849;
+tuning_rule_PD.c3=0.3817;
+tuning_rule_PD.pm_min=20;
+tuning_rule_PD.pm_max=90;
+tuning_rule_PD.beta_min=-1;
+tuning_rule_PD.beta_max=0;
+tuning_rule_PD.controller_type = controllerType.PD;
 
 target_joint_cost = 1.10;
 target_joint_cost_tol = 0.03;
@@ -25,7 +37,7 @@ quad_att.K=1;
 quad_att.tau=0.0181;
 quad_att.list_of_T=[0.0273, 0.1979];
 
-quad_att.findOptTuningRule(tuning_rule_PI);
+quad_att.findOptTuningRule(tuning_rule_PD);
 
 %%
 %corner processes

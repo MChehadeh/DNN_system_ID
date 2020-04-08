@@ -5,7 +5,7 @@ addpath(genpath(pwd))
 %%
 tuning_rule_ise=TuningRule;
 tuning_rule_ise.rule_type=TuningRuleType.pm_based;
-tuning_rule_ise.beta=-0.7357;
+tuning_rule_ise.beta=-0.7373;
 tuning_rule_ise.pm=20;
 tuning_rule_ise.c1=0.3849;
 tuning_rule_ise.c3=0.3817;

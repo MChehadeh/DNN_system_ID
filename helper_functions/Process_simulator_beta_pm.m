@@ -5,6 +5,6 @@ if nargin > 1
 else
     aux_tuning_rule = TuningRule;
 end
-aux_tuning_rule.setTuningParametersBetaPM(x(1),x(2));
+aux_tuning_rule.setTuningParameters(x(1),x(2));
 [~,f]=process.applyTuningRule(aux_tuning_rule);
 end

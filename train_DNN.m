@@ -4,7 +4,7 @@ addpath(genpath(pwd))
 
 %%
 %load list of responses
-load("FOIPTD_system_responses", "list_of_responses") 
+load("system_response_FOIPTD", "list_of_responses") 
 
 [Xtrain, Ytrain] = prepareDNNData(list_of_responses, 3000);
 
@@ -35,7 +35,7 @@ trained_DNN = trainNetwork(Xtrain, categorical(Ytrain), DNN, options)
 
 %%
 %testing
-load("FOIPTD_system_responses_testing", "list_of_responses") 
+load("system_response_FOIPTD_testing", "list_of_responses") 
 
 [Xtest, Ytest] = prepareDNNData(list_of_responses, 3000);
 

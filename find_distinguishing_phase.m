@@ -4,7 +4,7 @@ clc
 addpath(genpath(pwd))
 %% Testing TOPTD_process, PIDcontroller and TuningRule
 opt_tuning_rule_PI=TuningRule;
-opt_tuning_rule_PI.rule_type=TuningRuleType.pm_based;
+opt_tuning_rule_PI.rule_type=TuningRuleType.gm_based;
 opt_tuning_rule_PI.beta=0.15;
 opt_tuning_rule_PI.pm=30;
 opt_tuning_rule_PI.c1=0.4058;
@@ -13,6 +13,9 @@ opt_tuning_rule_PI.pm_min=20;
 opt_tuning_rule_PI.pm_max=90;
 opt_tuning_rule_PI.beta_min=-0.9;
 opt_tuning_rule_PI.beta_max=0.9;
+opt_tuning_rule_PI.gm=5;
+opt_tuning_rule_PI.gm_min=1.5;
+opt_tuning_rule_PI.gm_max=inf;
 opt_tuning_rule_PI.controller_type = controllerType.PI;
 
 opt_tuning_rule_PD=TuningRule;
