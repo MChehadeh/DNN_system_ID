@@ -59,7 +59,7 @@ for i=1:length(theta_values)
            if temp_process.sysOrder==1
                temp_process.list_of_T = [closest_point(1)];
                temp_process.tau = [closest_point(3)];
-           elseif temp_process.sysOrder==1
+           elseif temp_process.sysOrder==2
                temp_process.list_of_T = [closest_point(1), closest_point(2)];
                temp_process.tau = [closest_point(3)];
            else

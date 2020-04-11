@@ -7,8 +7,10 @@ function [discrete_values, list_of_processes] = discritize_process_space_spheric
 
 if discritize_basis=="theta"
     discretize_vector = [0 1 0];
+    N_sensitive_point = 5;
 elseif discritize_basis=="phi"
     discretize_vector = [0 0 1];
+    N_sensitive_point = 5;
 else
     warning("not implemented: only discritization in theta or phi directions are permited")
     return
@@ -24,14 +26,18 @@ for i=1:length(pivot_points)
     temp_point = dot(discretize_vector, spherical_cor);
     if (temp_point<min_value)
         min_value = temp_point;
-        min_value_process = pivot_points(i).returnCopy();
     end
     if (temp_point>max_value)
         max_value = temp_point;
     end
 end
 
+min_value_process = pivot_points(N_sensitive_point).returnCopy();%Override to maximum time delay %TODO: use most sensitive
 [~, min_spherical_cor] = min_value_process.get_spherical_params;
+min_spherical_cor = min_value * discretize_vector + min_spherical_cor .* not(discretize_vector);
+min_value_process.set_spherical_params(min_spherical_cor);
+min_value_process.findOptTuningRule(tuning_rule);
+
 max_value_process = min_value_process.returnCopy;
 max_spherical_cor = max_value * discretize_vector + min_spherical_cor .* not(discretize_vector);
 max_value_process.set_spherical_params(max_spherical_cor);

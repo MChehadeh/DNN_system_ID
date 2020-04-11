@@ -4,7 +4,7 @@ addpath(genpath(pwd))
 
 %%
 %load list of processes
-load("discrete_processes_FOIPTD", "list_of_discrete_processes")
+load("discrete_processes_SOIPTD", "list_of_discrete_processes")
 
 %%
 %Data generation properties
@@ -13,7 +13,7 @@ t_final = 10; %final simulation time
 
 N_response_per_process = 3; %number of times each process point is simulated 
 
-mrft_controller = MRFTController(-0.7373, 1);
+mrft_controller = MRFTController(-0.73, 1);
 
 %max relay bias percentage of the mrft_controller
 max_bias_mag = 0.5;

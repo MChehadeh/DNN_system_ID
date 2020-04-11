@@ -4,20 +4,24 @@ addpath(genpath(pwd))
 
 %%
 tuning_rule_PI=TuningRule;
-tuning_rule_PI.rule_type=TuningRuleType.pm_based;
-tuning_rule_PI.beta=0.9538;
+tuning_rule_PI.rule_type=TuningRuleType.gm_based;
+tuning_rule_PI.beta=0.1512;
 tuning_rule_PI.pm=54.0838;
 tuning_rule_PI.c1=0.3849;
 tuning_rule_PI.c3=0.3817;
 tuning_rule_PI.pm_min=20;
 tuning_rule_PI.pm_max=90;
+tuning_rule_PI.gm=1.7692;
+tuning_rule_PI.gm_min=1.5;
+tuning_rule_PI.gm_max=inf;
 tuning_rule_PI.beta_min=-1;
 tuning_rule_PI.beta_max=1;
 tuning_rule_PI.controller_type = controllerType.PI;
 
+
 tuning_rule_PD=TuningRule;
 tuning_rule_PD.rule_type=TuningRuleType.pm_based;
-tuning_rule_PD.beta=-0.7;
+tuning_rule_PD.beta=-0.73;
 tuning_rule_PD.pm=54.0838;
 tuning_rule_PD.c1=0.3849;
 tuning_rule_PD.c3=0.3817;
