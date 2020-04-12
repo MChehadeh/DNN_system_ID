@@ -12,7 +12,12 @@ load("system_response_SOIPTD", "list_of_responses")
 %DNN structure
 %TODO: generate joint cost matrix and port modified softmax functions
 
-options = trainingOptions('adam', 'Plots', 'training-progress','Shuffle','every-epoch','MaxEpochs', 300, 'LearnRateSchedule','piecewise', 'MiniBatchSize', 1000, 'InitialLearnRate', 0.01, 'LearnRateDropPeriod',50,'LearnRateDropFactor',0.7, 'ExecutionEnvironment', 'gpu');
+options = trainingOptions('adam', 'Plots', 'training-progress','Shuffle','every-epoch','MaxEpochs', 300, 'LearnRateSchedule','piecewise', 'MiniBatchSize', 1000, 'InitialLearnRate', 0.01, 'LearnRateDropPeriod',50,'LearnRateDropFactor',0.7, 'ExecutionEnvironment', 'cpu');
+
+load("Discrete_processes_SOIPTD", "joint_cost") 
+
+joint_cost(joint_cost < 1) = 1;
+joint_cost(joint_cost > 2) = 2;
 
 DNN = [ 
     imageInputLayer([size(Xtrain,1), 1, 2])
@@ -26,7 +31,8 @@ DNN = [
     dropoutLayer(0.4)
     fullyConnectedLayer(48, 'name', 'finalLayer')
     softmaxLayer() %needs to be the dummy softmax
-    classificationLayer];
+    %classificationLayer
+    modifiedSoftEntropy('crossentropy', joint_cost, [])];
 
 
 trained_DNN = trainNetwork(Xtrain, categorical(Ytrain), DNN, options)
