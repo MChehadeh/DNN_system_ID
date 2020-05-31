@@ -1,5 +1,6 @@
 *.slxc
 helper_functions/slprj/
+helper_functions/simulink/slprj/
 output_files/
 slprj/
 *.autosave

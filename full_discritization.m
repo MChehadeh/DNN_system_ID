@@ -105,6 +105,12 @@ for i=31:40%length(inner_loop_processes.list_of_discrete_processes)
     fprintf('Done \n')
     save("output_files/"+string(i)+"_vel/testing_data.mat", "MRFT_responses_testing")
     
+    %Get exact amplitude scale    
+    fprintf('Obtaining MRFT amplitude scaling factors ...')
+    list_of_amplitude_scales = FindMRFTScaling(list_of_outer_loop_processes, h_relay, optTuningRule, time_step, t_final);
+    fprintf('Done \n')
+    save("output_files/"+string(i)+"_vel/amplitude_scale.mat", "list_of_amplitude_scales")
+    
     %clear simulink data to avoid running out of space
     Simulink.sdi.clear
 end
