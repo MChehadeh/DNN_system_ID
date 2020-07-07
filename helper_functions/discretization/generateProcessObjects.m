@@ -27,6 +27,12 @@ elseif process_type == "FOPTD_outer"
     for i=1:num_of_processes
         list_of_processes = [list_of_processes, FOPTD_outer_process(inner_process)];
     end
+elseif process_type == "FOPTD"
+    num_of_processes=length(tau)*length(T1);
+    list_of_processes=[];
+    for i=1:num_of_processes
+        list_of_processes = [list_of_processes, FOPTD_process];
+    end
 else
     warning("not implemented: systems other than SOIPTD or FOIPTD_outer not implemented")
     return
