@@ -1,8 +1,8 @@
-classdef FOIPTD_outer_process < Outer_loop_process
+classdef FOIPTD_outer_process_inner_SOIPTD_filter < Outer_loop_process
     properties
     end
    methods      
-     function obj = FOIPTD_outer_process(inner_loop_process)
+     function obj = FOIPTD_outer_process_inner_SOIPTD_filter(inner_loop_process)
           obj.inner_loop_process = inner_loop_process.returnCopy();
           obj.sysOrder = 1;
           obj.num_of_integrators = 1;
@@ -45,10 +45,10 @@ classdef FOIPTD_outer_process < Outer_loop_process
           P_inner = obj.inner_loop_process.optController.P;
           D_inner = obj.inner_loop_process.optController.D;
           I_inner = obj.inner_loop_process.optController.I;
-          load_system("PD_controller_for_FOIPTD_with_inner_SOIPTD_parametric.slx")
-          set_param('PD_controller_for_FOIPTD_with_inner_SOIPTD_parametric','FastRestart','on');
+          load_system("PD_controller_for_FOIPTD_with_inner_SOIPTD_filter.slx")
+          set_param('PD_controller_for_FOIPTD_with_inner_SOIPTD_filter','FastRestart','on');
           options = simset('SrcWorkspace','current');
-          simOut = sim('PD_controller_for_FOIPTD_with_inner_SOIPTD_parametric.slx',[],options);
+          simOut = sim('PD_controller_for_FOIPTD_with_inner_SOIPTD_filter.slx',[],options);
           y_data = simOut.logsout.get('pv');     
           t = y_data.Values.Time;  
           y = y_data.Values.Data;          
@@ -82,10 +82,10 @@ classdef FOIPTD_outer_process < Outer_loop_process
           P_inner = obj.inner_loop_process.optController.P;
           D_inner = obj.inner_loop_process.optController.D;
           I_inner = obj.inner_loop_process.optController.I; 
-          load_system("PD_trajectory_controller_for_FOIPTD_parametric.slx")
-          set_param('PD_trajectory_controller_for_FOIPTD_parametric','FastRestart','on');
+          load_system("PD_controller_for_FOIPTD_with_inner_SOIPTD_filter.slx")
+          set_param('PD_controller_for_FOIPTD_with_inner_SOIPTD_filter','FastRestart','on');
           options = simset('SrcWorkspace','current');
-          simOut = sim('PD_trajectory_controller_for_FOIPTD_parametric.slx',[],options); 
+          simOut = sim('PD_controller_for_FOIPTD_with_inner_SOIPTD_filter.slx',[],options); 
           %NOTE: this simulink file uses a transfer function block which
           %does not support fast restart
           y_data = simOut.logsout.get('pv');   
