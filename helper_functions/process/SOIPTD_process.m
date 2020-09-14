@@ -20,7 +20,11 @@ classdef SOIPTD_process < Process
             % For more info on usage of Dynamic Expressions, refer to
             % the section "Creating Field Names Dynamically" in:
             % web([docroot '/techdoc/matlab_prog/br04bw6-38.html#br1v5a9-1'])
-            obj_copy.(props{i}) = obj.(props{i});
+            if ismethod(obj_copy.(props{i}), 'returnCopy') && ~isempty(obj.(props{i}))
+                obj_copy.(props{i}) = obj.(props{i}).returnCopy();
+            else
+                obj_copy.(props{i}) = obj.(props{i});
+            end
          end
      end
      

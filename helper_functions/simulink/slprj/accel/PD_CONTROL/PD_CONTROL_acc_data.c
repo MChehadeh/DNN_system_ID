@@ -1,6 +1,0 @@
-#include "__cf_PD_CONTROL.h"
-#include "PD_CONTROL_acc.h"
-#include "PD_CONTROL_acc_private.h"
-P_PD_CONTROL_T PD_CONTROL_rtDefaultP = { { - 41.683093729581849 , -
-11.568354165625514 , 16.0 , 0.125 } , 8.0 , 11.568354165625514 , 0.0 , 0.0181
-, 0.0 , - 5.0481284300721132 , 56.322775297127485 , 1.0 } ;

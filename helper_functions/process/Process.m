@@ -57,10 +57,18 @@ classdef Process < handle
         function obj = findOptTuningRule(obj,optimization_parameters)
 %           [a,obj.optCost,exitflag] = fminsearchbnd((@Process_simulator_beta_pm),[optimization_parameters.beta optimization_parameters.getTuningRuleMargin()],[optimization_parameters.beta_min optimization_parameters.getTuningRuleMarginLimits().min],[optimization_parameters.beta_max optimization_parameters.getTuningRuleMarginLimits().max],optimset('MaxFunEvals',10000,'MaxIter',10000,'TolFun',1e-8,'TolX',1e-10,'Display','none'),obj, optimization_parameters);
           g = @(x)Process_simulator_beta_pm(x, {obj, optimization_parameters});
-          [a,obj.optCost,exitflag] = fmincon(g,[optimization_parameters.beta optimization_parameters.getTuningRuleMargin()], [], [], [], [], [optimization_parameters.beta_min optimization_parameters.getTuningRuleMarginLimits().min],[optimization_parameters.beta_max optimization_parameters.getTuningRuleMarginLimits().max], [], optimset('algorithm','sqp','MaxFunEvals',10000,'MaxIter',10000,'TolFun',1e-8,'TolX',1e-10, 'UseParallel', false, 'Display','none'));
+          [a,obj.optCost,exitflag] = fmincon(g,[optimization_parameters.beta optimization_parameters.getTuningRuleMargin()], [], [], [], [], [optimization_parameters.beta_min optimization_parameters.getTuningRuleMarginLimits().min],[optimization_parameters.beta_max optimization_parameters.getTuningRuleMarginLimits().max], [], optimset('algorithm','sqp','MaxFunEvals',10000,'MaxIter',10000,'TolFun',1e-8,'TolX',1e-10, 'UseParallel', false, 'Display','on'));
           obj.optTuningRule.copyobj(optimization_parameters);
           obj.optTuningRule.setTuningParameters(a(1),a(2));
           obj.applyOptTuningRule(obj.optTuningRule);
+        end
+        
+        function obj = findOptController(obj,optimization_parameters)
+          g = @(x)Process_simulator_PID(x, {obj, optimization_parameters});
+          [a,obj.optCost,exitflag] = fmincon(g,[optimization_parameters.P optimization_parameters.I optimization_parameters.D], [], [], [], [], [0 0 0],[], [], optimset('algorithm','sqp','MaxFunEvals',10000,'MaxIter',10000,'TolFun',1e-8,'TolX',1e-10, 'UseParallel', false, 'Display','on'));
+          obj.optController.P = a(1);
+          obj.optController.I = a(2);
+          obj.optController.D = a(3);
         end
         
         function obj = findTrajOptTuningRule(obj,optimization_parameters, frequency_in)
@@ -296,16 +304,20 @@ classdef Process < handle
        function obj_copy = returnCopy(obj)
          % Construct a new object based on a deep copy of the current
          % object of this class by copying properties over.
-         obj_copy = Process;
+         obj_copy = Process();
          props = properties(obj);
          for i = 1:length(props)
             % Use Dynamic Expressions to copy the required property.
             % For more info on usage of Dynamic Expressions, refer to
             % the section "Creating Field Names Dynamically" in:
             % web([docroot '/techdoc/matlab_prog/br04bw6-38.html#br1v5a9-1'])
-            obj_copy.(props{i}) = obj.(props{i});
+            if ismethod(obj_copy.(props{i}), 'returnCopy') && ~isempty(obj.(props{i}))
+                obj_copy.(props{i}) = obj.(props{i}).returnCopy();
+            else
+                obj_copy.(props{i}) = obj.(props{i});
+            end
          end
-       end
+     end
    end
    
 end

@@ -94,6 +94,7 @@ classdef modifiedSoftEntropy < nnet.layer.ClassificationLayer
             loss = -sum(loss_matrix(:))/N;
         end
         
+        
         function dLdY = backwardLoss(layer, Y, T)
             % dLdY = backwardLoss(layer, Y, T) returns the derivatives of
             % the weighted softmax cross entropy loss with respect to the
