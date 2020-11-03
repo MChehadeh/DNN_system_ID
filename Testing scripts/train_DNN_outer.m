@@ -1,31 +1,34 @@
 %%
 clear all
 addpath(genpath(pwd))
-class = '21';
+class = '9_filtered';
 
 %%
-%load list of responses
+%load simulated MRFT data
+%Data can be downloaded from sharepoint folder
 load(strcat('output_files/',class,'/training_data'), "MRFT_responses_training") %testing
 load(strcat('output_files/',class,'/testing_data'), "MRFT_responses_testing") 
 load(strcat('output_files/',class,'/discrete_processes'), "list_of_outer_loop_processes") 
 
+%%
+%find largest period of MRFT osscillations
+% The largest period dictates the size of the input vector of the DNN
 periods = [];
 for i=1:length(MRFT_responses_training)
     periods = [periods, MRFT_responses_training(i).response_period];
 end
-
 input_layer_length = 1000 * ceil(max(periods));
+
+%Take the last mrft oscillation of each MRFT response and pads it to the
+%required size
 [Xtrain, Ytrain] = prepareDNNData(MRFT_responses_training, input_layer_length); %3000
 [Xtest, Ytest] = prepareDNNData(MRFT_responses_testing, input_layer_length); %3000
-
-high_bias = 0.5;
-low_bias = 0.3;
 
 %% 
 %DNN structure
 %TODO: generate joint cost matrix and port modified softmax functions
 
-options = trainingOptions('adam', 'Plots', 'training-progress','Shuffle','every-epoch','MaxEpochs', 200, 'LearnRateSchedule','piecewise', 'MiniBatchSize', 100, 'InitialLearnRate', 0.01, 'LearnRateDropPeriod',20,'LearnRateDropFactor',0.7, 'ExecutionEnvironment', 'cpu', 'ValidationData', {Xtest,categorical(Ytest)}, 'ValidationFrequency', 5, 'ValidationPatience',120);
+options = trainingOptions('adam', 'Plots', 'training-progress','Shuffle','every-epoch','MaxEpochs', 200, 'LearnRateSchedule','piecewise', 'MiniBatchSize', 100, 'InitialLearnRate', 0.01, 'LearnRateDropPeriod',20,'LearnRateDropFactor',0.7, 'ExecutionEnvironment', 'gpu', 'ValidationData', {Xtest,categorical(Ytest)}, 'ValidationFrequency', 5, 'ValidationPatience',120);
 
 load(strcat('output_files/',class,'/joint_cost'), "joint_cost_matrix") 
 
@@ -44,14 +47,16 @@ DNN = [
     dropoutLayer(0.4)
     fullyConnectedLayer(length(list_of_outer_loop_processes), 'name', 'finalLayer')
     softmaxLayer() %needs to be the dummy softmax
-    classificationLayer];
-    %modifiedSoftEntropy('crossentropy', joint_cost_matrix, [])];
+    %classificationLayer];
+    modifiedSoftEntropy('crossentropy', joint_cost_matrix, [])];
 
 
 trained_DNN = trainNetwork(Xtrain, categorical(Ytrain), DNN, options)
 
 %%
 %testing
+high_bias = 0.5;
+low_bias = 0.3;
 load(strcat('output_files/',class,'/testing_data'), "MRFT_responses_testing") 
 load(strcat('output_files/',class,'/joint_cost'), "joint_cost_matrix") 
 

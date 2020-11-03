@@ -1,7 +1,10 @@
 %%
 clear all
 addpath(genpath(pwd))
-classes = 16:48;
+
+%%
+
+classes = 1:48; %range of classes to train a NN for
 high_bias = 0.5;
 low_bias = 0.3;
 
@@ -11,6 +14,7 @@ for j=classes
     class = num2str(j);
     %%
     %load list of responses
+    %Data can be downloaded from sharepoint folder
     load(strcat('output_files/',class,'/training_data'), "MRFT_responses_training") %testing
     load(strcat('output_files/',class,'/testing_data'), "MRFT_responses_testing") 
     load(strcat('output_files/',class,'/discrete_processes'), "list_of_outer_loop_processes") 

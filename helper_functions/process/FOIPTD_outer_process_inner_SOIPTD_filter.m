@@ -13,7 +13,7 @@ classdef FOIPTD_outer_process_inner_SOIPTD_filter < Outer_loop_process
      function obj_copy = returnCopy(obj)
          % Construct a new object based on a deep copy of the current
          % object of this class by copying properties over.
-         obj_copy = FOIPTD_outer_process(Process);
+         obj_copy = FOIPTD_outer_process_inner_SOIPTD_filter(Process);
          props = properties(obj);
          for i = 1:length(props)
             % Use Dynamic Expressions to copy the required property.

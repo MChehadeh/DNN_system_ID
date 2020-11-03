@@ -4,7 +4,7 @@ clc
 addpath(genpath(pwd))
 %%
 %Options
-outer_process_type = "FOPTD_outer";
+outer_process_type = "FOPTD_outer_inner_filter";
 range_of_T1 = [0.2, 10];
 range_of_tau = [0.0005, 0.15];
 
@@ -34,19 +34,29 @@ tuning_rule_PI.controller_type = controllerType.PI;
 
 
 %define inner loop process
-% quad_att=SOIPTD_process_filter(10);
+%quad - sys 12
+% quad_att=SOIPTD_process_filter(NaN, 10);
 % quad_att.K=351.9020*0.4827; %quad roll
 % quad_att.tau=0.0149;
 % quad_att.list_of_T=[0.1055, 0.4109];
-% init_cont = PIDcontroller_filter;
+% init_cont = PIDcontroller_filter(NaN, 10);
 % init_cont.P = 0.05; init_cont.D = 0.01;
-% quad_att.findOptTuningRule(init_cont);
+% quad_att.findOptController(init_cont);
 
-quad_att=SOIPTD_process();
-quad_att.K=351.9020*0.4827; %quad roll
-quad_att.tau=0.0149;
-quad_att.list_of_T=[0.1055, 0.4109];
-quad_att.findOptTuningRule(tuning_rule_PD);
+% quad_att=SOIPTD_process();
+% quad_att.K=351.9020*0.4827; %quad roll
+% quad_att.tau=0.0149;
+% quad_att.list_of_T=[0.1055, 0.4109];
+% quad_att.findOptTuningRule(tuning_rule_PD);
+
+%hexa - sys 9
+quad_att=SOIPTD_process_filter(NaN, 10);
+quad_att.K=72.3594; %quad roll
+quad_att.tau=0.02;
+quad_att.list_of_T=[0.0709, 0.2763];
+init_cont = PIDcontroller_filter(NaN, 10);
+init_cont.P = 0.05; init_cont.D = 0.01;
+quad_att.findOptController(init_cont);
 
 
 %joint cost for discritization
@@ -64,14 +74,14 @@ h_relay = 1;
 
 %%
 
-class_name = string('12');
+class_name = string('9_filtered');
 
 fprintf('Inner loop system IDa %.4f \n')
 mkdir('output_files/'+class_name)
     
 inner_loop_process_i = quad_att.returnCopy();
 
-%find distinguishing phase
+%%find distinguishing phase
 fprintf('Finding the distinguishing phase ... ')
 list_of_scattered_processes=generateProcessObjects(outer_process_type, 1, linspace(range_of_T1(1), range_of_T1(2), 3), [1], linspace(range_of_tau(1), range_of_tau(2), 3), tuning_rule_PD, inner_loop_process_i);
 [optProc, list_of_deter]=getOptimalTuningRuleFromProcesses(list_of_scattered_processes);
@@ -80,9 +90,10 @@ fprintf('Done \n')
 fprintf('Distinguishing phase: %.4f', optTuningRule.beta)
 fprintf('Least Worst deterioration: %.4f', min(list_of_deter))
 save("output_files/"+class_name+"/distinguishing_phase.mat", "optTuningRule", "optProc", "list_of_deter");
-    
+
 %clear simulink data to avoid running out of space
 Simulink.sdi.clear
+    
 
 %discritize process
 fprintf('Discritizing process ...')

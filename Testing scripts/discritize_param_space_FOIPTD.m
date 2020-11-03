@@ -3,6 +3,7 @@ clear all
 addpath(genpath(pwd))
 
 %%
+%Distinguishing phase options
 tuning_rule_ise=TuningRule;
 tuning_rule_ise.rule_type=TuningRuleType.pm_based;
 tuning_rule_ise.beta=-0.7373;

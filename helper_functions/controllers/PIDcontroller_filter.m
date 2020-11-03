@@ -1,10 +1,12 @@
 classdef PIDcontroller_filter < PIDcontroller
     properties
         FC {mustBeNumeric}=10
+        WC {mustBeNumeric}=10*2*pi        
     end
    methods 
        function obj = PIDcontroller_filter(obj, filter_fc)
            obj.FC = filter_fc;
+           obj.WC = filter_fc * 2 * pi;
        end
        
        function [obj,TF]=getTF(obj)
@@ -17,7 +19,7 @@ classdef PIDcontroller_filter < PIDcontroller
            % to the derivative of the process value rather than the error
            % signal to avoid derivative kick.
            [~, g_open] = process.get_open_TF(false);
-           g_D = g_open / (1 + g_open * pid(0,0, obj.D) * tf([obj.FC], [1 obj.FC]) * tf([obj.FC], [1 obj.FC]) * tf([1],[1],'IODelay', process.tau));
+           g_D = g_open / (1 + g_open * pid(0,0, obj.D) * tf([obj.WC], [1 obj.WC]) * tf([obj.WC], [1 obj.WC]) * tf([1],[1],'IODelay', process.tau));
            g_PID = pid(obj.P, obj.I,0) * g_D;
            TF = g_PID / (1 + g_PID * tf([1],[1],'IODelay', process.tau));  
        end

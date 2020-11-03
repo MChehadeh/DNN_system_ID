@@ -2,9 +2,10 @@ clear all
 close all
 clc
 addpath(genpath(pwd))
-%% Testing TOPTD_process, PIDcontroller and TuningRule
+%% Initialization of variables
 opt_tuning_rule_PI=TuningRule;
 opt_tuning_rule_PI.rule_type=TuningRuleType.gm_based;
+%Info for Optimizer
 opt_tuning_rule_PI.beta=0.15;
 opt_tuning_rule_PI.pm=30;
 opt_tuning_rule_PI.c1=0.4058;
@@ -29,6 +30,7 @@ opt_tuning_rule_PD.pm_max=90;
 opt_tuning_rule_PD.beta_min=-0.9;
 opt_tuning_rule_PD.beta_max=-0.1;
 
+% process def
 quad_att=SOIPTD_process;
 quad_att.K=1;
 quad_att.tau=0.0181;
@@ -56,12 +58,28 @@ quad_vel.findOptTuningRule(opt_tuning_rule_PI)
 quad_vel.applyOptTuningRule(quad_vel.optTuningRule)
 quad_vel.applyTuningRule(quad_vel.optTuningRule)
 
-%% Testing generateProcessObjects SOIPTD
-list_of_processes=generateProcessObjects('SOIPTD', 1, linspace(0.015,0.3,3),linspace(0.2, 2, 3),linspace(0.0005, 0.1, 3), opt_tuning_rule_PD, []);
+%% Find the distinguishing phase of SOIPTD process
+T1_min = 0.015; T1_max = 0.3; 
+T2_min = 0.2; T2_max = 2;
+tau_min = 0.0005; tau_max = 0.1;
+number_of_points = 3;
+list_of_processes=generateProcessObjects('SOIPTD', 1, linspace(T1_min, T1_max,3),linspace(T2_min, T2_max, 3),linspace(tau_min, tau_max, 3), opt_tuning_rule_PD, []);
 [optProc, list_of_deter]=getOptimalTuningRuleFromProcesses(list_of_processes);
-%% Testing generateProcessObjects FOIPTD_outer
-list_of_processes=generateProcessObjects('FOIPTD_outer', 1, linspace(0.2,6,3),[1],linspace(0.0005, 0.1, 3), opt_tuning_rule_PD, quad_att);
+optTuningRule = optProc.optTuningRule;
+distinguishing_beta = optTuningRule.beta; 
+%% Find the distinguishing phase of outer loop x and y position (FOIPTD)
+T1_min = 0.2; T1_max = 6; 
+tau_min = 0.0005; tau_max = 0.1;
+number_of_points = 3;
+list_of_processes=generateProcessObjects('FOIPTD_outer', 1, linspace(T1_min, T1_max,3),[1],linspace(tau_min, tau_max, 3), opt_tuning_rule_PD, quad_att);
 [optProc, list_of_deter]=getOptimalTuningRuleFromProcesses(list_of_processes);
-%% Testing generateProcessObjects FOPTD_outer
-list_of_processes=generateProcessObjects('FOPTD_outer', 1, linspace(0.2,6,3),[1],linspace(0.0005, 0.1, 3), opt_tuning_rule_PI, quad_att);
+optTuningRule = optProc.optTuningRule;
+distinguishing_beta = optTuningRule.beta;
+%% Find the distinguishing phase of outer loop x and y velocity (FOPTD)
+T1_min = 0.2; T1_max = 6; 
+tau_min = 0.0005; tau_max = 0.1;
+number_of_points = 3;
+list_of_processes=generateProcessObjects('FOPTD_outer', 1, linspace(T1_min, T1_max,3),[1],linspace(tau_min, tau_max, 3), opt_tuning_rule_PI, quad_att);
 [optProc, list_of_deter]=getOptimalTuningRuleFromProcesses(list_of_processes);
+optTuningRule = optProc.optTuningRule;
+distinguishing_beta = optTuningRule.beta;

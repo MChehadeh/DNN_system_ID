@@ -4,19 +4,25 @@ addpath(genpath(pwd))
 class = 'inner_loop';
 
 %%
-%load list of responses
-g = load(strcat('output_files/',class,'/system_response_SOIPTD'), "list_of_responses"); %testing
-MRFT_responses_training = g.list_of_responses;
-g = load(strcat('output_files/',class,'/system_response_SOIPTD_testing'), "list_of_responses") ;
-MRFT_responses_testing = g.list_of_responses;
+%load simulated MRFT data
+%Data can be downloaded from sharepoint folder
+g = load(strcat('output_files/',class,'/training_data'), "MRFT_responses_training"); %testing
+MRFT_responses_training = g.MRFT_responses_training;
+g = load(strcat('output_files/',class,'/testing_data'), "MRFT_responses_testing") ;
+MRFT_responses_testing = g.MRFT_responses_testing;
 load(strcat('output_files/',class,'/discrete_processes_SOIPTD'), "list_of_discrete_processes");
 
+%%
+%find largest period of MRFT osscillations
+% The largest period dictates the size of the input vector of the DNN
 periods = [];
 for i=1:length(MRFT_responses_training)
     periods = [periods, MRFT_responses_training(i).response_period];
 end
-
 input_layer_length = 1000 * ceil(max(periods));
+
+%Take the last mrft oscillation of each MRFT response and pads it to the
+%required size
 [Xtrain, Ytrain] = prepareDNNData(MRFT_responses_training, input_layer_length); %3000
 [Xtest, Ytest] = prepareDNNData(MRFT_responses_testing, input_layer_length); %3000
 
@@ -32,6 +38,8 @@ joint_cost_matrix = g.joint_cost;
 joint_cost_matrix(joint_cost_matrix < 1) = 1;
 joint_cost_matrix(joint_cost_matrix > 1e3) = 1e3;
 
+%Note: For using the modified soft entropy, the softmax function needs to
+%be modified
 DNN = [ 
     imageInputLayer([size(Xtrain,1), 1, 2])
     fullyConnectedLayer(3000) %fullyConnectedLayer(2000)
@@ -51,9 +59,9 @@ DNN = [
 trained_DNN = trainNetwork(Xtrain, categorical(Ytrain), DNN, options)
 
 %%
-%testing
-g = load(strcat('output_files/',class,'/system_response_SOIPTD_testing'), "list_of_responses");
-MRFT_responses_testing = g.list_of_responses;
+% Evaluating the DNN accuracy on the testing set
+g = load(strcat('output_files/',class,'/testing_data'), "MRFT_responses_testing");
+MRFT_responses_testing = g.MRFT_responses_testing;
 
 [Xtest, Ytest] = prepareDNNData(MRFT_responses_testing, input_layer_length); %3000
 
@@ -71,7 +79,7 @@ end
 accuracy = 100 * correct / (correct+wrong)
 
 %%
-%joint cost
+% Evaluating the DNN average and worst case joint cost on the testing set
 g = load(strcat('output_files/',class,'/discrete_processes_SOIPTD'), "joint_cost");
 joint_cost_matrix = g.joint_cost;
 cost = zeros(length(Ytest_classes),1);

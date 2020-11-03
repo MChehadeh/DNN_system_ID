@@ -2,16 +2,6 @@ clear all
 addpath(genpath(pwd))
 load('simulation_results_clean.mat')
 
-
-%%
-%ignore idx
-% ignore_process = [21, 16, 11, 15, 3];
-% ignore_idx = [];
-% 
-% for i=1:length(ignore_process)
-%    ignore_idx = [ignore_idx; find(grp2idx(list_of_index_inner_loop)==ignore_process(i))];
-% end
-
 %%
 %normalized gains results
 N_avg_att_cost = sum(list_of_inner_loop_normalized_joint_cost) / length(list_of_inner_loop_normalized_joint_cost)

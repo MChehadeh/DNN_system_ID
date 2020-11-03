@@ -2,6 +2,9 @@ clear all
 close all
 clc
 addpath(genpath(pwd))
+
+%This script requires the discretization of the inner loop parameter space
+%(refer to SOIPTD_discretization.m)
 %%
 %Options
 inner_loop_processes = load("discrete_processes_SOIPTD", "list_of_discrete_processes");
@@ -10,6 +13,7 @@ range_of_T1 = [0.2, 6];
 range_of_tau = [0.0005, 0.1];
 
 %tuning rule options
+%PD tuning rules for FOIPTD
 tuning_rule_PD=TuningRule;
 tuning_rule_PD.rule_type=TuningRuleType.pm_based;
 tuning_rule_PD.beta=-0.7;
@@ -21,6 +25,7 @@ tuning_rule_PD.pm_max=90;
 tuning_rule_PD.beta_min=-0.9;
 tuning_rule_PD.beta_max=-0.1;
 
+%PI tuning rules for FOPTD
 tuning_rule_PI=TuningRule;
 tuning_rule_PI.rule_type=TuningRuleType.gm_based;
 tuning_rule_PI.beta=0.1512;
@@ -49,7 +54,7 @@ h_relay = 1;
 
 %%
 
-for i=1length(inner_loop_processes.list_of_discrete_processes)
+for i=1:length(inner_loop_processes.list_of_discrete_processes)
     fprintf('Inner loop system IDa %.4f \n', i)
     mkdir('output_files/b' + string(i))
     
