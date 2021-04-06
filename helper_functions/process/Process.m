@@ -5,7 +5,7 @@ classdef Process < handle
         K {mustBeNumeric} =1
         tau {mustBeNumeric} 
         list_of_T {mustBeNumeric}
-        sysOrder {mustBeNumeric} 
+        sysOrder {mustBeNumeric} % TODO: this is quite confusing. Is it the number of time constants? or relative degree? 
         num_of_integrators {mustBeNumeric}
         T_sim {mustBeNumeric} =0
         optTuningRule TuningRule = TuningRule
@@ -13,6 +13,8 @@ classdef Process < handle
         optCost {mustBeNumeric} = 0
         worstTuningRule TuningRule
         worstDeterioration {mustBeNumeric}=0
+        nonlinear_c1 {mustBeNumeric}=1; %Note, defined at beta of the optTuningRule
+        nonlinear_c3 {mustBeNumeric}=1;
     end
     
     methods
@@ -129,6 +131,18 @@ classdef Process < handle
           [~, Q, t, y]=obj.getStep(auxController);
         end
         
+        function [obj]=findNonlinearMRFTScaleParameters(obj)
+            h_relay=1;
+            N_response_per_process=1;
+            time_step=0.001;
+            t_final=50;
+            max_bias_mag=0;
+            max_noise_mag=0;
+            [list_of_responses] = generateResponses(obj, h_relay, obj.optTuningRule, N_response_per_process, time_step, t_final, max_bias_mag, max_noise_mag);
+            obj.nonlinear_c1=(list_of_responses(1).response_amplitude*obj.optController.P)/h_relay;
+            obj.nonlinear_c3=(list_of_responses(1).response_frequency*(obj.optController.D/obj.optController.P));
+        end
+        
        function [obj,Q, t, y]=applyTrajectoryTuningRule(obj,tuning_rule, frequency_in)
           [~,g]=obj.get_open_TF(true);
           [w0,a0]=TuningRule.get_w_mag_from_phase(g,rad2deg(asin(tuning_rule.beta))-180);
@@ -141,32 +155,32 @@ classdef Process < handle
           [~, Q, t, y]=obj.getTrajectory(auxController, frequency_in);
         end
               
-       function [obj,Q,t,y]=getStep(obj,PIDcontroller_obj)
-          obj.set_T_sim();     
-          t_final = obj.T_sim;
-          [~, g_open] = obj.get_open_TF(false);
-          tau = obj.tau;
-          P = PIDcontroller_obj.P;
-          D = PIDcontroller_obj.D;       
-          I = PIDcontroller_obj.I;
-          load_system("PD_control.slx")
-          set_param('PD_CONTROL','FastRestart','on');
-          options = simset('SrcWorkspace','current');
-          simOut = sim('PD_CONTROL.slx',[],options); 
-          %NOTE: this simulink file uses a transfer function block which
-          %does not support fast restart
-          y_data = simOut.logsout.get('pv');     
-          t = y_data.Values.Time;  
-          y = y_data.Values.Data;          
-          val_err=1-y;
-          simulation_status=simOut.logsout.get('simulation_status');
-          if (sum(simulation_status.Values.Data)>0)
-              Q=10e25;
-          else          
-              Q=trapz(t,val_err.*val_err)/obj.T_sim;
-          end
-          %Q=trapz(t,abs(val_err))/obj.T_sim;
-       end
+%        function [obj,Q,t,y]=getStep(obj,PIDcontroller_obj)
+%           obj.set_T_sim();     
+%           t_final = obj.T_sim;
+%           [~, g_open] = obj.get_open_TF(false);
+%           tau = obj.tau;
+%           P = PIDcontroller_obj.P;
+%           D = PIDcontroller_obj.D;       
+%           I = PIDcontroller_obj.I;
+%           load_system("PD_control.slx")
+%           set_param('PD_CONTROL','FastRestart','on');
+%           options = simset('SrcWorkspace','current');
+%           simOut = sim('PD_CONTROL.slx',[],options); 
+%           %NOTE: this simulink file uses a transfer function block which
+%           %does not support fast restart
+%           y_data = simOut.logsout.get('pv');     
+%           t = y_data.Values.Time;  
+%           y = y_data.Values.Data;          
+%           val_err=1-y;
+%           simulation_status=simOut.logsout.get('simulation_status');
+%           if (sum(simulation_status.Values.Data)>0)
+%               Q=10e25;
+%           else          
+%               Q=trapz(t,val_err.*val_err)/obj.T_sim;
+%           end
+%           %Q=trapz(t,abs(val_err))/obj.T_sim;
+%        end
        
        function [obj,Q,t,y,ref]=getTrajectory(obj,PIDcontroller_obj, freuqncy_in)
           obj.set_T_sim();     
@@ -236,6 +250,7 @@ classdef Process < handle
        end
        
        function [obj]=set_spherical_params(obj, spherical_cor)
+           % Note: T1:x, T2:y, tau:z
            r = spherical_cor(1);
            theta = spherical_cor(2);
            phi = spherical_cor(3);
@@ -246,11 +261,13 @@ classdef Process < handle
              obj.list_of_T = [r.*sin(phi)];
              obj.tau =r.*cos(phi);
            else 
+               % TODO: implement higher-order systems: https://en.wikipedia.org/wiki/N-sphere#Spherical_coordinates
                warning("Not implemented: spherical conversion for systems wuth order higher than 2 not implemented") 
            end
        end
        
        function [obj, spherical_cor]=get_spherical_params(obj)
+           %TODO: Why obj is returned?
            if obj.sysOrder == 2
              r=sqrt(obj.list_of_T(1).^2+obj.list_of_T(2).^2+obj.tau.^2);%r
              theta=atan(obj.list_of_T(2)./obj.list_of_T(1));%theta

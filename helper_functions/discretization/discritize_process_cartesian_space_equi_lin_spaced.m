@@ -5,8 +5,6 @@ function [discrete_values, list_of_processes] = discritize_process_space(pivot_p
 %   - start_point: [gain T1 T2 tau R theta rho P_optimal D_optimal]
 %   - end_point: [gain T1 T2 tau R theta rho P_optimal D_optimal] --> discritization direction is inferred from start and end point
 
-%TODO-APPROVED-AA: Delete
-
 if discritize_basis=="T1"
     discretize_vector = [1 0 0];
     N_sensitive_point = 3;

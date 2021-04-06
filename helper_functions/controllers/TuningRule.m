@@ -97,6 +97,7 @@ classdef TuningRule < handle
      end
    end
    methods (Static)
+       % TODO: swap w, mag as this might be confusing
        function [ w,mag ] = get_w_mag_from_phase( g_model,phase )
             p = phase;
 
@@ -106,11 +107,18 @@ classdef TuningRule < handle
             mag = interp1( squeeze(phase), squeeze(mag_bode), p);
             w   = interp1( squeeze(phase), wout, p);
             if isnan(w)
-                w=logspace(-2,4,10000);
+                w=logspace(-5,5,100000);
                 [mag_bode,phase,wout] = bode(g_model,w);
 
                 mag = interp1( squeeze(phase), squeeze(mag_bode), p);
                 w   = interp1( squeeze(phase), wout, p);
+                if isnan(w)
+                w=logspace(-10,10,1000000);
+                [mag_bode,phase,wout] = bode(g_model,w);
+
+                mag = interp1( squeeze(phase), squeeze(mag_bode), p);
+                w   = interp1( squeeze(phase), wout, p);
+                end
             end
            
        end

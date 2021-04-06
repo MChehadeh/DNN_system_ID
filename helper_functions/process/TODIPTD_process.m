@@ -1,12 +1,12 @@
-classdef SOIPTD_process < Process
+classdef TODIPTD_process < Process
     properties
         
     end
    methods      
-     function obj = SOIPTD_process(obj)
-         if nargin >= 0 %TODO: Check this for initialization
-          obj.sysOrder = 2;
-          obj.num_of_integrators = 1;
+     function obj = TODIPTD_process(obj)
+         if nargin > 0
+          obj.sysOrder = 3;
+          obj.num_of_integrators = 2;
           obj.optTuningRule=TuningRule;
           obj.optController=PIDcontroller;
          end
@@ -15,7 +15,7 @@ classdef SOIPTD_process < Process
      function obj_copy = returnCopy(obj)
          % Construct a new object based on a deep copy of the current
          % object of this class by copying properties over.
-         obj_copy = SOIPTD_process();
+         obj_copy = TODIPTD_process();
          props = properties(obj);
          for i = 1:length(props)
             % Use Dynamic Expressions to copy the required property.
@@ -36,14 +36,15 @@ classdef SOIPTD_process < Process
           K = obj.K;
           T1 = obj.list_of_T(1);
           T2 = obj.list_of_T(2);
+          T3 = obj.list_of_T(3);
           tau = obj.tau;
           P = PIDcontroller_obj.P;
           D = PIDcontroller_obj.D;   
           I = PIDcontroller_obj.I;   
-          load_system("PD_controller_for_SOIPTD_parametric.slx")
-          set_param('PD_controller_for_SOIPTD_parametric','FastRestart','on');
+          load_system("PD_controller_for_TODIPTD_parametric.slx")
+          set_param('PD_controller_for_TODIPTD_parametric','FastRestart','on');
           options = simset('SrcWorkspace','current');
-          simOut = sim('PD_controller_for_SOIPTD_parametric.slx',[],options);
+          simOut = sim('PD_controller_for_TODIPTD_parametric.slx',[],options);
           y_data = simOut.logsout.get('pv');     
           t = y_data.Values.Time;  
           y = y_data.Values.Data;          
@@ -64,15 +65,16 @@ classdef SOIPTD_process < Process
           K = obj.K;
           T1 = obj.list_of_T(1);
           T2 = obj.list_of_T(2);
+          T3 = obj.list_of_T(3);
           tau = obj.tau;
           P = PIDcontroller_obj.P;
           D = PIDcontroller_obj.D;   
           I = PIDcontroller_obj.I;  
           frequency = frequency_in;
-          load_system("PD_vel_controller_for_SOIPTD_parametric.slx")
-          set_param('PD_vel_controller_for_SOIPTD_parametric','FastRestart','on');
+          load_system("PD_vel_controller_for_TODIPTD_parametric.slx")
+          set_param('PD_vel_controller_for_TODIPTD_parametric','FastRestart','on');
           options = simset('SrcWorkspace','current');
-          simOut = sim('PD_vel_controller_for_SOIPTD_parametric.slx',[],options); 
+          simOut = sim('PD_vel_controller_for_TODIPTD_parametric.slx',[],options); 
           %NOTE: this simulink file uses a transfer function block which
           %does not support fast restart
           y_data = simOut.logsout.get('pv');     
